@@ -57,7 +57,7 @@ window.addEventListener('error',e=>{
 (()=>{
 'use strict';
 /* =========================================================
-   PIXEL PROBE v2 â€” parte 1: base, fuente, mundo de 4 islas
+   PIXEL PROBE v2 — parte 1: base, fuente, mundo de 4 islas
    Todo el arte es procedural y original.
    ========================================================= */
 const c=document.getElementById('v'),g=c.getContext('2d');
@@ -225,7 +225,7 @@ Y:'#...#/#...#/.#.#./..#../..#../..#../..#..',Z:'#####/....#/...#./..#../.#.../#
 '+':'...../..#../..#../#####/..#../..#../.....','/':'....#/....#/...#./..#../.#.../#..../#....',
 '%':'##..#/##..#/...#./..#../.#.../#..##/#..##','(':'..##./.#.../#..../#..../#..../.#.../..##.',
 ')':'.##../...#./....#/....#/....#/...#./.##..',"'":'..#../..#../...../...../...../...../.....',
-'Â¡':'..#../...../..#../..#../..#../..#../..#..','Â¿':'..#../...../..#../.#.../#..../#...#/.###.',
+'¡':'..#../...../..#../..#../..#../..#../..#..','¿':'..#../...../..#../.#.../#..../#...#/.###.',
 '=':'...../#####/...../#####/...../...../.....','*':'...../.#.#./..#../#####/..#../.#.#./.....'};
 const GL={};
 for(const k in FONT_SRC){
@@ -233,7 +233,7 @@ for(const k in FONT_SRC){
  for(let r=0;r<7;r++)for(let q=0;q<5;q++)if(rows[r][q]==='#')pts.push(q,r);
  GL[k]=pts;
 }
-const ACC={'Ã':'A','Ã‰':'E','Ã':'I','Ã“':'O','Ãš':'U','Ãœ':'U','Ã‘':'N'};
+const ACC={'Á':'A','É':'E','Í':'I','Ó':'O','Ú':'U','Ü':'U','Ñ':'N'};
 function textW(s,sc){return Math.max(0,s.length*6-1)*sc}
 function drawText(s,x,y,sc,col,o){
  o=o||{};s=String(s).toUpperCase();
@@ -244,7 +244,7 @@ function drawText(s,x,y,sc,col,o){
   let cx=x+ox;
   for(let i=0;i<s.length;i++){
    let ch=s[i],acc=0;
-   if(ACC[ch]){acc=ch==='Ã‘'?2:1;ch=ACC[ch]}
+   if(ACC[ch]){acc=ch==='Ñ'?2:1;ch=ACC[ch]}
    const pts=GL[ch];
    if(pts)for(let k=0;k<pts.length;k+=2)g.fillRect(cx+pts[k]*sc,y+oy+pts[k+1]*sc,sc,sc);
    if(acc===1)g.fillRect(cx+3*sc,y+oy-2*sc,sc,sc);
@@ -352,7 +352,7 @@ function updateParts(){
  }
 }
 /* =========================================================
-   PIXEL PROBE v2 â€” parte 2: render (cielo, mar, suelo, bloques, mano 3D)
+   PIXEL PROBE v2 — parte 2: render (cielo, mar, suelo, bloques, mano 3D)
    ========================================================= */
 let CP=1,SP=0,CAMH=.5,FOG=[150,186,172],HZ=[228,223,193],DLIGHT=1,NIGHT=0,DAYT=0;
 const zbuf=new Float32Array(W).fill(30);
@@ -914,7 +914,7 @@ function drawHorseHead(){
  drawVox(VM.horse,320,392+bob,9,-.38+Math.sin(frame*.07)*.03,0,0,0,-3,-14);
 }
 /* =========================================================
-   PIXEL PROBE v2 â€” parte 3: paleta, sprites por bioma, fauna, peces, iconos
+   PIXEL PROBE v2 — parte 3: paleta, sprites por bioma, fauna, peces, iconos
    ========================================================= */
 const P={
  bark:[101,64,42],barkL:[168,117,67],barkD:[70,44,30],cut:[214,170,112],
@@ -1554,7 +1554,7 @@ function drawIcon(x,y,s,id,ctx){
  }
 }
 /* =========================================================
-   PIXEL PROBE v2 â€” parte 4: juego, crafteo, mochila, UI, controles
+   PIXEL PROBE v2 — parte 4: juego, crafteo, mochila, UI, controles
    ========================================================= */
 const GROW=900,FALL_FR=48;
 let dbgHold=false,spawn={x:30,y:72},mini=null,occ=new Set(),insects=[],HIT=[],newArm=0;
@@ -1760,7 +1760,7 @@ function puff(x,y,pal,n,lvl,zmax){
    (Math.random()-.5)*.04,(Math.random()-.5)*.04,.03+Math.random()*.06,
    lvl===0?.1+Math.random()*.04:lvl===1?.06+Math.random()*.03:.04+Math.random()*.02,jit(pick(pal)),lvl);
 }
-const WORDS={wood:['Â¡TOC!','Â¡TAC!','Â¡POM!'],stone:['Â¡TING!','Â¡CLANG!','Â¡TIC!'],block:['Â¡TOC!','Â¡PAM!'],hit:['Â¡ZAS!','Â¡PAF!','Â¡TAJO!']};
+const WORDS={wood:['¡TOC!','¡TAC!','¡POM!'],stone:['¡TING!','¡CLANG!','¡TIC!'],block:['¡TOC!','¡PAM!'],hit:['¡ZAS!','¡PAF!','¡TAJO!']};
 const WCOL={wood:['#ffd060','#ff9a3c'],stone:['#bfefff','#ffffff'],block:['#ffe0a0','#ffffff'],hit:['#ff5a5a','#ffb0a0']};
 function say2(kind,big,text){
  popup(text||pick(WORDS[kind]),pick(WCOL[kind]),big?7:5,big);
@@ -1784,10 +1784,10 @@ function hitObj(o){
  }
  if(tree){startFall(o);const n=o.kind==='palm'||o.kind==='cactus'||o.kind==='dead'?2:3;give('wood',n);say('MADERA +'+n);
   if(o.kind==='dead'&&Math.random()<.7){give('coal',1)}
-  popup('Â¡CRAAAC!','#ff7a3c',8,true)}
+  popup('¡CRAAAC!','#ff7a3c',8,true)}
  else{breakRock(o);give('stone',2);let m='PIEDRA +2';
-  if(o.bio===1&&Math.random()<.7){give('coal',1);m+=' Â· CARBON +1'}
-  say(m);popup('Â¡CRASH!','#bfefff',8,true)}
+  if(o.bio===1&&Math.random()<.7){give('coal',1);m+=' · CARBON +1'}
+  say(m);popup('¡CRASH!','#bfefff',8,true)}
 }
 function startFall(o){
  blocked.delete(o.cellY*N+o.cellX);
@@ -1812,7 +1812,7 @@ function landTree(o){
    .03+Math.random()*.07,.09+Math.random()*.05,pick(lp),0);
  }
  puff(o.x+fx*.5,o.y+fy*.5,DUST,12,2,.2);
- camShake=8;sfx('thud');popup('Â¡PUM!','#ffe08a',6,true);
+ camShake=8;sfx('thud');popup('¡PUM!','#ffe08a',6,true);
 }
 function breakRock(o){
  blocked.delete(o.cellY*N+o.cellX);
@@ -1854,8 +1854,8 @@ function killAnimal(o){
  puff(o.x,o.y,pal,10,1,.5);
  give('meat',A.meat);let m='CARNE +'+A.meat;
  let lea=A.lea;if(o.kind==='rabbit'&&Math.random()<.6)lea=1;
- if(lea){give('leather',lea);m+=' Â· CUERO +'+lea}
- say(m);popup('Â¡SPLAT!','#ff4040',9,true);camShake=6;sfx('chof');
+ if(lea){give('leather',lea);m+=' · CUERO +'+lea}
+ say(m);popup('¡SPLAT!','#ff4040',9,true);camShake=6;sfx('chof');
 }
 function hitBlock(cx,cy,v){
  const i=cy*N+cx;
@@ -1865,7 +1865,7 @@ function hitBlock(cx,cy,v){
   addP(cx+.5+(Math.random()-.5)*.7,cy+.5+(Math.random()-.5)*.7,.2+Math.random()*.6,(Math.random()-.5)*.04,(Math.random()-.5)*.04,.02+Math.random()*.05,.05+Math.random()*.03,jit(col),2);
  burst([col,[255,255,255]],6);
  if(BLH[i]<=0){
-  BLK[i]=0;give(id,1);sfx('break');say('RECOGIDO: '+ITEMS[id].n);popup('Â¡CRASH!','#ffe0a0',6,true);
+  BLK[i]=0;give(id,1);sfx('break');say('RECOGIDO: '+ITEMS[id].n);popup('¡CRASH!','#ffe0a0',6,true);
   for(let k=0;k<10;k++)addP(cx+.5+(Math.random()-.5)*.8,cy+.5+(Math.random()-.5)*.8,.1+Math.random()*.8,(Math.random()-.5)*.05,(Math.random()-.5)*.05,.02+Math.random()*.06,.07+Math.random()*.05,jit(col),0);
  }else{say2('block',false);sfx(v===2||v===4?'stone':'wood')}
 }
@@ -1884,7 +1884,7 @@ function doHit(){
   say('NO HAY NADA DELANTE');sfx('whiff');return;
  }
  if(o.type==='animal'){
-  if(tool===4)hitAnimal(o);else{say('NECESITAS EL CUCHILLO (4)');sfx('tink');popup('Â¡FIU!','#ffffff',4,false)}
+  if(tool===4)hitAnimal(o);else{say('NECESITAS EL CUCHILLO (4)');sfx('tink');popup('¡FIU!','#ffffff',4,false)}
   return;
  }
  if(o.type==='tree'){if(tool===1)hitObj(o);else{say('NECESITAS EL HACHA (1)');sfx('tink')}return}
@@ -1902,15 +1902,15 @@ function gather(o){
  if(o.type==='plant'){
   if(o.kind==='crop'){
    if(o.age<GROW){say('AUN ESTA CRECIENDO...');return}
-   give('crop',2);give('seeds',1);say('COSECHA +2 Â· SEMILLA +1');
-  }else{give('flower',1);if(Math.random()<.35){give('seeds',1);say('FLOR +1 Â· SEMILLA +1')}else say('FLOR +1')}
+   give('crop',2);give('seeds',1);say('COSECHA +2 · SEMILLA +1');
+  }else{give('flower',1);if(Math.random()<.35){give('seeds',1);say('FLOR +1 · SEMILLA +1')}else say('FLOR +1')}
   puff(o.x,o.y,o.kind==='crop'?[CROPC,P.stemL]:[FLOWERS[o.col|0],P.stemL],8,2,.3);
   objects.splice(objects.indexOf(o),1);sfx('pick');return;
  }
  if(o.type==='bush'){
   if(o.berries){
    o.berries=false;o.regrow=1400;give('berry',1);
-   if(Math.random()<.25){give('seeds',1);say('BAYAS +1 Â· SEMILLA +1')}else say('BAYAS +1');
+   if(Math.random()<.25){give('seeds',1);say('BAYAS +1 · SEMILLA +1')}else say('BAYAS +1');
    puff(o.x,o.y,[P.berry,P.bushL],8,2,.3);sfx('pick');
   }else say('AUN NO TIENE BAYAS');
   return;
@@ -1999,7 +1999,7 @@ function sleep(o){
 }
 function mountHorse(o){
  o.tamed=true;mounted=o;objects.splice(objects.indexOf(o),1);
- sfx('horse');say('MONTAS EL CABALLO Â· E PARA BAJAR');popup('Â¡HIII!','#ffd29a',6,true);
+ sfx('horse');say('MONTAS EL CABALLO · E PARA BAJAR');popup('¡HIII!','#ffd29a',6,true);
 }
 function dismount(){
  const h=mounted;mounted=null;
@@ -2231,7 +2231,7 @@ function drawTitle(){
  if(t>30){
   g.globalAlpha=Math.min(1,(t-30)/30);
   drawText('FRONTERA DE 4 ISLAS',320,222,2,'#cfe6f8',{align:'c',outline:'#08101f'});
-  drawText('NIEVE Â· VOLCAN Â· BOSQUE Â· DESIERTO'.replace(/Â·/g,'-'),320,246,1,'#8fb0cc',{align:'c'});
+  drawText('NIEVE · VOLCAN · BOSQUE · DESIERTO'.replace(/·/g,'-'),320,246,1,'#8fb0cc',{align:'c'});
   g.globalAlpha=1;
  }
  if(t>60&&Math.floor(t/28)%2===0)drawText('TOCA PARA JUGAR',320,288,2,'#ffffff',{align:'c',outline:'#08101f'});
@@ -2380,7 +2380,7 @@ function update(){
  if(mv&&player.z<=.001&&frame-lastStep>(sprint?9:mounted?11:16)){lastStep=frame;sfx(mounted?'step':'step')}
  /* lava */
  if(nearLava(player.x,player.y)&&frame%36===0){
-  hp-=2;camShake=6;sfx('hurt');say('Â¡LAVA! TE QUEMAS');
+  hp-=2;camShake=6;sfx('hurt');say('¡LAVA! TE QUEMAS');
   const P0=POOLS.find(P=>Math.hypot(player.x-P.x,player.y-P.y)<P.r+.35);
   if(P0){const a=Math.atan2(player.y-P0.y,player.x-P0.x);move(Math.cos(a)*.5,Math.sin(a)*.5)}
   if(hp<=0)die();
