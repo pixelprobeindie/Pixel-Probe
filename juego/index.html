@@ -124,7 +124,7 @@ let state='title',menu=null,tool='axe',held='plank',hp=10,stam=100,
  mounted=null,dayStarted=0,titleT=0,fade=0,banner='',bannerT=0,curBio=-1,
  sleepT=0,respawn=null,lastStep=0;
 let player={x:30,y:72,a:0,z:0,vz:0};
-let EXP=null,expG=null,TPV=false,RPX=0,RPY=0,tpD=3.6;
+const SENSK=[.45,1,1.6,2.4,3.4];let lockFail=false,EXP=null,expG=null,TPV=false,RPX=0,RPY=0,tpD=3.6;
 /* v3: estado nuevo */
 let pitch=0,chargeT=0,charging=false,swingPow=1,dashT=0,dashCD=0,dashDX=0,dashDY=0,iframes=0,hitStop=0,
  dayNum=0,lastDayT=0,temp=50,hurtFlash=0,slashFx=0,bowT=0;
@@ -3009,9 +3009,6 @@ function render(){
  if(dusk>0){g.fillStyle='rgba(255,140,60,'+(dusk*.14)+')';g.fillRect(0,0,W,H)}
  if(state==='play'&&UW<.3)drawTorchLights();
  if(!TPV)drawInsects(true);
- const vg=g.createRadialGradient(W/2,H/2,65,W/2,H/2,390);
- vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.34)');
- g.fillStyle=vg;g.fillRect(0,0,W,H);
  if(state==='play'){drawOverlays();drawSeaOverlay()}
  if(state==='play'&&!menu){
   drawFx();if(!TPV||charging)drawCross();drawTargetLabel();drawHUD();drawAirHud();
@@ -3109,16 +3106,16 @@ function update(){
  }
  let mv=false;
  if(!menu&&sleepT<=0){
-  const SK=[.7,1,1.4][OPT.sens];
+  const SK=SENSK[OPT.sens];
   if(keys.arrowleft)player.a-=.045*SK;
   if(keys.arrowright)player.a+=.045*SK;
   if(keys.arrowup)pitch=Math.min(1.2,pitch+.15*SK);
   if(keys.arrowdown)pitch=Math.max(-1.2,pitch-.15*SK);
-  if(aimOn&&!menu&&inputMode==='kb'&&!document.pointerLockElement){
-   const dz=.1,fx_=Math.abs(mNX)<dz?0:Math.sign(mNX)*Math.min(1,(Math.abs(mNX)-dz)/(1-dz-.1));
-   player.a+=fx_*(.45+.55*Math.abs(fx_))*.06*SK;
-   const ty=Math.abs(mNY)<.08?0:-Math.sign(mNY)*Math.min(1,(Math.abs(mNY)-.08)/.8)*1.1;
-   pitch+=(ty-pitch)*.12;
+  if(aimOn&&lockFail&&!document.pointerLockElement&&!menu&&inputMode==='kb'){
+   const ex=Math.abs(mNX)>.9?Math.sign(mNX)*Math.min(1,(Math.abs(mNX)-.9)/.08):0;
+   player.a+=ex*.05*SK;
+   const ey=Math.abs(mNY)>.9?Math.sign(mNY)*Math.min(1,(Math.abs(mNY)-.9)/.08):0;
+   pitch=clamp(pitch-ey*.025*SK,-1.2,1.2);
   }
   const ca=CP,sa=SP;
   let spd=1;
@@ -3282,7 +3279,6 @@ window.addEventListener('keydown',e=>{
  if(k==='p'&&!e.repeat){openMenu({type:'opt'});return}
  if(k==='l'&&!e.repeat){openMenu({type:'book',step:'home'});return}
  if(k>='1'&&k<='9'&&!e.repeat)selectTool(TOOLS[Number(k)-1]);
- if(k==='tab'&&!e.repeat){toggleAim();return}
  if(k==='q'&&!e.repeat)selectTool('place');
  if(k==='e'&&!e.repeat)interact();
  if(k===' '&&!e.repeat)jump();
@@ -3291,6 +3287,7 @@ window.addEventListener('keydown',e=>{
  if(k==='r'&&!e.repeat)player.a+=Math.PI;
  if(k==='m'&&!e.repeat){toggleMap();return}
  if(k==='h'&&!e.repeat)selectTool('hands');
+ if(k==='o'&&!e.repeat&&lockFail){try{window.open(location.href.split('#')[0],'_blank')}catch(er){}}
  if(k==='0'&&!e.repeat)selectTool('hands');
  if(k==='b')openMenu({type:'inv'});
  if(k==='n'&&!e.repeat)newWorld();
@@ -3326,7 +3323,7 @@ let lookPointer=null,lastX=0,lastY=0,downT=0,downX=0,downY=0,moved=0;
 look.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;setInputMode('touch');{const q=toCanvas(e);if(q.x>=570&&q.x<=640&&q.y>=0&&q.y<=76){toggleMap();return}}lookPointer=e.pointerId;lastX=e.clientX;lastY=e.clientY;downT=performance.now();downX=e.clientX;downY=e.clientY;moved=0;look.setPointerCapture(e.pointerId)});
 look.addEventListener('pointermove',e=>{
  if(e.pointerId!==lookPointer)return;
- const SK=[.7,1,1.4][OPT.sens];
+ const SK=SENSK[OPT.sens];
  player.a+=(e.clientX-lastX)*.009*SK;lastX=e.clientX;
  pitch=clamp(pitch-(e.clientY-lastY)*.0306*SK,-1.2,1.2);lastY=e.clientY;
  moved=Math.max(moved,Math.hypot(e.clientX-downX,e.clientY-downY));
@@ -4530,6 +4527,7 @@ window.addEventListener('mousedown',e=>{
  if(state!=='play'||menu)return;
  if(e.button===0&&!document.pointerLockElement){const q=toCanvas(e);if(q.x>=570&&q.x<=640&&q.y>=0&&q.y<=76){toggleMap();return}}
  if(e.target&&e.target.closest&&e.target.closest('.slot,.tb,.cb'))return;
+ if(aimOn&&!document.pointerLockElement&&!lockFail&&inputMode==='kb'&&e.button===0)tryLock(true);
  if(e.button===0){
   mouseL=true;startCharge();
  }else if(e.button===2)interact();
@@ -4539,12 +4537,13 @@ window.addEventListener('mouseup',e=>{if(e.button===0&&mouseL){mouseL=false;rele
 window.addEventListener('mousemove',e=>{
  {const r=c.getBoundingClientRect();if(r.width>0){mNX=(e.clientX-r.left)/r.width*2-1;mNY=(e.clientY-r.top)/r.height*2-1}}
  if(state!=='play'||menu)return;
- const SK=[.7,1,1.4][OPT.sens];
+ const SK=SENSK[OPT.sens];
  if(document.pointerLockElement){
   player.a+=e.movementX*.0032*SK;
   pitch=clamp(pitch-e.movementY*.0109*SK,-1.2,1.2);
- }else if(aimOn){
-  /* la mira esta fija en el centro: se gira segun donde este el raton (ver update) */
+ }else if(aimOn&&inputMode==='kb'){
+  player.a+=e.movementX*.0032*SK;
+  pitch=clamp(pitch-e.movementY*.0109*SK,-1.2,1.2);
  }else if(mouseL&&(e.buttons&1)){
   player.a+=e.movementX*.0062*SK;
   pitch=clamp(pitch-e.movementY*.021*SK,-1.2,1.2);
@@ -5071,7 +5070,7 @@ function pollPad(){
   if(down(1)||down(9)||down(8)){if(menu.type==='confirm'||menu.type==='controls')openMenu({type:'opt'});else closeMenu()}
   for(let i=0;i<16;i++)padPrev[i]=bt(i);return;
  }
- const SK=[.7,1,1.4][OPT.sens];
+ const SK=SENSK[OPT.sens];
  joy.x=lx;joy.y=ly;
  player.a+=rx*.052*SK;pitch=clamp(pitch-ry*.034*SK,-1.2,1.2);
  padRun=bt(6)||bt(10);
@@ -5154,7 +5153,7 @@ const CTRL=[
   ['CAMBIAR HERRAMIENTA','LB / RB O CRUCETA IZQ-DER'],['CORRER','GATILLO IZQUIERDO (LT) O L3'],['OPCIONES','START'],['LIBRO DE RECETAS','SELECT / BACK'],['MENUS','CRUCETA + A (ACEPTAR) / B (ATRAS)']],
  [['MOVERSE','W A S D'],['MIRAR','MOVER EL RATON (MIRA ACTIVA) O FLECHAS'],['GOLPEAR / CARGAR','CLIC IZQUIERDO O F (MANTEN Y SUELTA)'],
   ['INTERACTUAR / COMER','E O CLIC DERECHO'],['SALTAR / BUCEAR / SUBIR','ESPACIO'],['CORRER','SHIFT'],['ESQUIVAR (2 SEGUIDOS)','C, CTRL O CLIC RUEDA + W A S D'],
-  ['HERRAMIENTAS','1 A 9 · Q COLOCAR'],['MIRA / LIBERAR RATON','TAB O BOTON SUPERIOR'],['OPCIONES / LIBRO / MOCHILA','P / L / B'],['NUEVO MUNDO / SONIDO','N / U'],['MAPA · MANOS LIBRES','M · H O 0']]];
+  ['HERRAMIENTAS','1 A 9 · Q COLOCAR'],['MIRA','CLIC PARA CAPTURAR EL RATON'],['OPCIONES / LIBRO / MOCHILA','P / L / B'],['NUEVO MUNDO / SONIDO','N / U'],['MAPA · MANOS LIBRES','M · H O 0']]];
 function drawControls(){
  panel('CONTROLES');
  const tabs=['TACTIL','MANDO','TECLADO Y RATON'];
@@ -5196,7 +5195,7 @@ function setLang(l){OPT.lang=l;saveOpt();sfx('ui')}
 
 /* ---------- opciones (sustituye a la version anterior) ---------- */
 const OPT_TABS=[
- ['JUEGO',[['SENSIBILIDAD CAMARA','sens',['BAJA','MEDIA','ALTA']],['SONIDO Y MUSICA','snd',['NO','SI']],['CONTROLES TACTILES','touch',['AUTO','SIEMPRE','NUNCA']]]],
+ ['JUEGO',[['SENSIBILIDAD RATON/CAMARA','sens',['BAJA','MEDIA','ALTA','MUY ALTA','MAXIMA']],['SONIDO Y MUSICA','snd',['NO','SI']],['CONTROLES TACTILES','touch',['AUTO','SIEMPRE','NUNCA']]]],
  ['MUNDO Y VISTA',[
    ['RESOLUCION','res',['ALTA','MEDIA','BAJA']],
   ['SOMBRAS','shadow',['COMPLETAS','SIMPLES','NINGUNA']],
@@ -5778,6 +5777,15 @@ CUADRICULA DEL SUELO|GROUND GRID
 ESPUMA DEL AGUA|WATER FOAM
 SUBES A RESPIRAR|SURFACING TO BREATHE
 MAPA|MAP
+WEB INCRUSTADA: PULSA O PARA ABRIR EN PESTAÑA NUEVA Y CAPTURAR EL RATON|EMBEDDED PAGE: PRESS O TO OPEN IN A NEW TAB AND CAPTURE THE MOUSE
+MUEVE EL RATON PARA MIRAR · LOS BORDES GIRAN|MOVE THE MOUSE TO LOOK · SCREEN EDGES TURN
+CLIC PARA CAPTURAR EL RATON|CLICK TO CAPTURE THE MOUSE
+RATON CAPTURADO|MOUSE CAPTURED
+MIRA|LOOK
+NO SE PUDO CAPTURAR EL RATON · ARRASTRA PARA MIRAR|COULD NOT CAPTURE THE MOUSE · DRAG TO LOOK
+SENSIBILIDAD RATON/CAMARA|MOUSE / CAMERA SENSITIVITY
+MUY ALTA|VERY HIGH
+MAXIMA|MAX
 RECOMENDADO|RECOMMENDED
 TUS AJUSTES NO CAMBIAN SOLOS|YOUR SETTINGS NEVER CHANGE BY THEMSELVES
 RECOMENDADO: CALIDAD ALTA|RECOMMENDED: HIGH QUALITY
@@ -6088,15 +6096,19 @@ function armorAbs(){
 let aimOn=false;
 const tmouse=document.getElementById('tmouse');
 const AIMCUR="url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='13' height='13'><path d='M6.5 1v3.5M6.5 8.5v3.5M1 6.5h3.5M8.5 6.5h3.5' stroke='black' stroke-width='3'/><path d='M6.5 1v3.5M6.5 8.5v3.5M1 6.5h3.5M8.5 6.5h3.5' stroke='white' stroke-width='1'/></svg>\") 6 6, crosshair";
-function tryLock(){return;if(aimOn&&!menu&&!document.pointerLockElement&&c.requestPointerLock){try{const p=c.requestPointerLock();if(p&&p.catch)p.catch(()=>{})}catch(e){}}}
+function tryLock(user){
+ if(!aimOn||menu||document.pointerLockElement||!c.requestPointerLock)return;
+ try{const p=c.requestPointerLock();if(p&&p.catch)p.catch(()=>{})}catch(e){}
+ if(user)setTimeout(()=>{if(aimOn&&!document.pointerLockElement&&!menu&&state==='play'){lockFail=true;let emb=false;try{emb=window.self!==window.top}catch(e){emb=true}say(emb?'WEB INCRUSTADA: PULSA O PARA ABRIR EN PESTAÑA NUEVA Y CAPTURAR EL RATON':'MUEVE EL RATON PARA MIRAR · LOS BORDES GIRAN')}},700);
+}
 function setAim(v,quiet){
  aimOn=v;tmouse.classList.toggle('on',v);document.body.style.cursor=v?AIMCUR:'';
  if(v)tryLock();else if(document.pointerLockElement){try{document.exitPointerLock()}catch(e){}}
- if(!quiet)say(v?'MIRA FIJA · MUEVE EL RATON PARA GIRAR · TAB LIBERA':'RATON LIBRE');
+ if(v&&!quiet){lockFail=false;tryLock(true)}
+ if(!quiet)say(v?'RATON CAPTURADO':'RATON LIBRE');
 }
 function toggleAim(){setAim(!aimOn)}
 tmouse.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();toggleAim()});
-document.addEventListener('pointerlockchange',()=>{if(!document.pointerLockElement&&aimOn&&state==='play'&&!menu)setAim(false)});
 {const _cm=closeMenu;closeMenu=function(){_cm();tryLock()}}
 setAim(inputMode==='kb',true);
 {const _dt=drawTargetLabel;
@@ -6154,6 +6166,19 @@ function drawMapMenu(){
  const prevMenu=drawMenu;
  drawMenu=function(){if(menu.type==='map'){drawMapMenu();return}prevMenu()};
 }
+
+{const _dt2=drawTargetLabel;
+ drawTargetLabel=function(){
+  _dt2();
+  if(aimOn&&!document.pointerLockElement&&!lockFail&&inputMode==='kb'&&!menu&&state==='play'){
+   g.fillStyle='rgba(0,0,0,.6)';g.fillRect(200,226,240,16);
+   drawText('CLIC PARA CAPTURAR EL RATON',320,230,1,'#ffffff',{align:'c'});
+  }
+ };
+}
+
+window.addEventListener('click',()=>{if(state==='play'&&!menu&&aimOn&&inputMode==='kb'&&!document.pointerLockElement&&!lockFail)tryLock(true)},true);
+window.addEventListener('mouseup',()=>{if(state==='play'&&!menu&&aimOn&&inputMode==='kb'&&!document.pointerLockElement&&!lockFail)tryLock(true)},true);
 /* =========================================================
    PIXEL PROBE v8 — parte 11: jefes elementales, erupcion
    ========================================================= */
