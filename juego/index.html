@@ -3286,6 +3286,7 @@ window.addEventListener('keydown',e=>{
  if((k==='c'||k==='control')&&!e.repeat)dashKey('c');
  if(k==='r'&&!e.repeat)player.a+=Math.PI;
  if(k==='m'&&!e.repeat){toggleMap();return}
+ if(k==='tab'&&!e.repeat){toggleAim();return}
  if(k==='h'&&!e.repeat)selectTool('hands');
  if(k==='o'&&!e.repeat&&lockFail){try{window.open(location.href.split('#')[0],'_blank')}catch(er){}}
  if(k==='0'&&!e.repeat)selectTool('hands');
@@ -5153,7 +5154,7 @@ const CTRL=[
   ['CAMBIAR HERRAMIENTA','LB / RB O CRUCETA IZQ-DER'],['CORRER','GATILLO IZQUIERDO (LT) O L3'],['OPCIONES','START'],['LIBRO DE RECETAS','SELECT / BACK'],['MENUS','CRUCETA + A (ACEPTAR) / B (ATRAS)']],
  [['MOVERSE','W A S D'],['MIRAR','MOVER EL RATON (MIRA ACTIVA) O FLECHAS'],['GOLPEAR / CARGAR','CLIC IZQUIERDO O F (MANTEN Y SUELTA)'],
   ['INTERACTUAR / COMER','E O CLIC DERECHO'],['SALTAR / BUCEAR / SUBIR','ESPACIO'],['CORRER','SHIFT'],['ESQUIVAR (2 SEGUIDOS)','C, CTRL O CLIC RUEDA + W A S D'],
-  ['HERRAMIENTAS','1 A 9 · Q COLOCAR'],['MIRA','CLIC PARA CAPTURAR EL RATON'],['OPCIONES / LIBRO / MOCHILA','P / L / B'],['NUEVO MUNDO / SONIDO','N / U'],['MAPA · MANOS LIBRES','M · H O 0']]];
+  ['HERRAMIENTAS','1 A 9 · Q COLOCAR'],['MIRA / LIBERAR RATON','CLIC CAPTURA · TAB LIBERA'],['OPCIONES / LIBRO / MOCHILA','P / L / B'],['NUEVO MUNDO / SONIDO','N / U'],['MAPA · MANOS LIBRES','M · H O 0']]];
 function drawControls(){
  panel('CONTROLES');
  const tabs=['TACTIL','MANDO','TECLADO Y RATON'];
@@ -5777,6 +5778,9 @@ CUADRICULA DEL SUELO|GROUND GRID
 ESPUMA DEL AGUA|WATER FOAM
 SUBES A RESPIRAR|SURFACING TO BREATHE
 MAPA|MAP
+CLIC CAPTURA · TAB LIBERA|CLICK CAPTURES · TAB RELEASES
+RATON CAPTURADO · TAB LO LIBERA|MOUSE CAPTURED · TAB RELEASES
+RATON LIBRE · TAB PARA CAPTURAR|MOUSE FREE · TAB TO CAPTURE
 WEB INCRUSTADA: PULSA O PARA ABRIR EN PESTAÑA NUEVA Y CAPTURAR EL RATON|EMBEDDED PAGE: PRESS O TO OPEN IN A NEW TAB AND CAPTURE THE MOUSE
 MUEVE EL RATON PARA MIRAR · LOS BORDES GIRAN|MOVE THE MOUSE TO LOOK · SCREEN EDGES TURN
 CLIC PARA CAPTURAR EL RATON|CLICK TO CAPTURE THE MOUSE
@@ -6105,7 +6109,7 @@ function setAim(v,quiet){
  aimOn=v;tmouse.classList.toggle('on',v);document.body.style.cursor=v?AIMCUR:'';
  if(v)tryLock();else if(document.pointerLockElement){try{document.exitPointerLock()}catch(e){}}
  if(v&&!quiet){lockFail=false;tryLock(true)}
- if(!quiet)say(v?'RATON CAPTURADO':'RATON LIBRE');
+ if(!quiet)say(v?'RATON CAPTURADO · TAB LO LIBERA':'RATON LIBRE · TAB PARA CAPTURAR');
 }
 function toggleAim(){setAim(!aimOn)}
 tmouse.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();toggleAim()});
