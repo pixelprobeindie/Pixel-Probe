@@ -302,8 +302,8 @@
     </div>
     <div class="panel" id="guidePanel"><button class="x" data-close>✕</button><h3>📖 GUÍA DEL EXPLORADOR</h3><div id="guideBody" class="guide">
       <h4>⏳ Turnos</h4><p>Cada 2 segundos empieza un turno para todos a la vez. Andando das 1 paso por turno, corriendo hasta 3, y en pelea 1 paso o 1 acción. Si no haces nada, el turno se pierde.</p>
-      <h4>😮‍💨 Cansancio</h4><p>Correr, pelear, trabajar o usar habilidades cansa: tras 3-4 turnos seguidos quedas agotado y debes recuperar el aliento 2 turnos. Andar no cansa. A los enemigos y animales les pasa lo mismo: aprovecha cuando jadean.</p>
-      <h4>💪 Atributos</h4><p>Empiezas flojo en todo. Fuerza (armas, talar, picar, cavar), Resistencia (correr muchísimo), Tiro con arco (disparar) y Puños (pelear a puñetazos) suben practicando. Mejoran el acierto, los críticos de los puños y cuántos turnos aguantas, pero no el daño ni la defensa: eso solo lo da el equipo. El campo de práctica de Brannoc enseña, pero muy despacio.</p>
+      <h4>😮‍💨 Cansancio</h4><p>Pelear, trabajar o usar habilidades cansa: tras 3 turnos seguidos quedas agotado y debes recuperar el aliento 2 turnos. Andar y correr no cansan. A los enemigos y animales les pasa lo mismo: aprovecha cuando jadean.</p>
+      <h4>💪 Atributos</h4><p>Empiezas flojo en todo. Fuerza (armas, talar, picar, cavar), Tiro con arco (disparar) y Puños (pelear a puñetazos) suben practicando y solo mejoran tu tasa de acierto. El daño y la defensa los da el equipo. El campo de práctica de Brannoc enseña, pero muy despacio.</p>
       <h4>⚔️ Combate</h4><p>Ponte en modo pelea (tardas un turno en desenvainar) y toca al enemigo. Los enemigos te persiguen corriendo 2 casillas por turno y también fallan. El escudo para golpes, la armadura de cuero quita 1 de daño y la de hierro 2.</p>
       <h4>🍗 Hambre y salud</h4><p>La comida baja con el tiempo. Si llega a 0 tienes 20 turnos para comer o mueres. Si te atiborras, vomitas. Con buena comida recuperas vida poco a poco, y descansando en la posada mucho más rápido. La curandera vende vendas y ungüentos y te cura por unas monedas. Las vendas cortan las hemorragias. En la nieve, sin armadura de cuero o una hoguera cerca, te congelas.</p>
       <h4>🪙 Economía</h4><p>El oro solo sale de cofres, cadáveres enterrados (necesitas pala) y bolsas de jugadores caídos. El mercader compra materiales y vende herramientas, ropa y pan. El artesano fabrica armas y armaduras con oro y materiales. Todo se gasta con el uso.</p>
@@ -1062,7 +1062,7 @@ function reveal(persist) {
 // =====================================================================
 //  TURNOS GLOBALES Y MODOS
 // =====================================================================
-const allowed = m => (m === 'run' ? (curTurn() < me.restUntil ? 1 : 3) : 1);
+const allowed = m => (m === 'run' ? 3 : 1);
 function syncTurn() { const t = curTurn(); if (me.turn !== t) { me.turn = t; me.used = 0; } }
 function stepsLeft() { syncTurn(); return Math.max(0, allowed(me.mode) - me.used); }
 function spend(n) { me.lastAct = curTurn(); syncTurn(); if (me.used + n > allowed(me.mode)) return false; me.used += n; return true; }
@@ -1155,9 +1155,9 @@ const TRAINER_LINES = [
   'Mejor que practiques un poco si quieres sobrevivir ahí fuera.',
   'Los orcos no esperan a que recuperes el aliento. Aquí sí.',
   'El muñeco no devuelve los golpes… por eso enseña tan despacio. Fuera se aprende rápido, pero se muere rápido también.',
-  'Más fuerza no te hará pegar más fuerte: para eso, mejor acero. Te hará acertar más y aguantar más turnos.',
-  'Corre mucho, muchísimo, y tus pulmones aguantarán más. La resistencia no se regala.',
-  'A puñetazo limpio también se aprende: más acierto, más críticos, más aguante.',
+  'Más fuerza no te hará pegar más fuerte: para eso, mejor acero. Te hará acertar más.',
+  'Un golpe que falla es un turno perdido. Practica hasta que tus golpes encuentren carne.',
+  'A puñetazo limpio también se aprende: cada golpe te hace más certero.',
   'Con el arco, primero la diana. Cada flecha que falla te enseña algo.',
   'Si te cansas en mitad de una pelea, estás muerto. Mide tus golpes.',
   'Los bandidos también se cansan. Espera a que jadeen y entonces, ¡zas!',
@@ -1167,7 +1167,7 @@ function talkTrainer() {
   const pick = TRAINER_LINES.slice(1).sort(() => Math.random() - .5).slice(0, 2);
   const a = me.att, best = Math.max(a.fue, a.arc, a.pun);
   const verdict = best < 15 ? 'Ahora mismo pegas como un niño. Golpea esos muñecos o dispara a la diana.' : best < 35 ? 'No está mal. Pero ahí fuera todavía te comen vivo.' : 'Ya tienes algo de oficio. El muñeco poco más te va a enseñar: sal a probarte.';
-  showDialog([TRAINER_LINES[0], ...pick, verdict + ' (💪 ' + Math.floor(a.fue) + ' · 🫁 ' + Math.floor(a.res) + ' · 🏹 ' + Math.floor(a.arc) + ' · 👊 ' + Math.floor(a.pun) + ')'], null, 'Brannoc, el instructor');
+  showDialog([TRAINER_LINES[0], ...pick, verdict + ' (💪 ' + Math.floor(a.fue) + ' · 🏹 ' + Math.floor(a.arc) + ' · 👊 ' + Math.floor(a.pun) + ')'], null, 'Brannoc, el instructor');
 }
 function talkTomas() {
   if (isNaked()) return giftClothes(me.gifted);
@@ -1374,7 +1374,6 @@ function nExert(n, T, noRest) {
 function npcRun(n, tx, ty, T, away, stopAt) {   // corre: hasta 2 casillas en el turno
   stepToward(n, tx, ty, T, away);
   if (Math.abs(tx - n.x) + Math.abs(ty - n.y) > stopAt || away) stepToward(n, tx, ty, T, away);
-  nExert(n, T);
 }
 function npcTick(T) {
   const allT = targetsWorld(), boss = npcs.find(n => NPCDEF[n.k].boss);
@@ -1622,19 +1621,18 @@ function inReach(x, y) {
   if (dx !== 0 && dy !== 0) return false;   // lanza: en línea recta
   return passable(me.a, me.x + Math.sign(dx), me.y + Math.sign(dy));
 }
-// ---------- atributos: no suben el daño (eso solo lo da el equipo), sí el acierto y el aguante ----------
-const ATT = { fue:['💪','Fuerza'], res:['🫁','Resistencia'], arc:['🏹','Tiro con arco'], pun:['👊','Puños'] };
+// ---------- atributos: solo mejoran la tasa de acierto (el daño y la defensa los da el equipo) ----------
+const ATT = { fue:['💪','Fuerza'], arc:['🏹','Tiro con arco'], pun:['👊','Puños'] };
 const HITK = { fue:[.55,.004], arc:[.45,.005], pun:[.6,.0035], work:[.62,.0033], gather:[.72,.0025] };
 function hitChance(kind) { const [b, k] = HITK[kind], a = me.att[kind === 'work' || kind === 'gather' ? 'fue' : kind]; return Math.min(.96, b + a*k); }
 const bowHit = () => hitChance('arc');
-const fistCrit = () => Math.min(.4, me.att.pun*.004);
+const fistCrit = () => .08;   // fijo: entrenar solo mejora el acierto
 function gainAttr(k, amt) {
   const a = me.att[k], before = Math.floor(a); me.att[k] = Math.min(100, a + amt*(1 - a/115));
   if (Math.floor(me.att[k]) > before) { toast(ATT[k][0] + ' ¡' + ATT[k][1] + ' sube a ' + Math.floor(me.att[k]) + '!'); sfx('coin', .5); }
 }
 // ---------- cansancio: tras 3-4 turnos seguidos de esfuerzo hay que descansar 2 ----------
-const stamKey = kind => kind === 'run' ? 'res' : kind === 'work' ? 'fue' : me.weapon === 'fist' ? 'pun' : WPN[me.weapon].ranged ? 'arc' : 'fue';
-const stamLimit = kind => 3 + Math.floor(me.att[stamKey(kind)] / 20);
+const stamLimit = kind => 3;   // pelear, trabajar y las habilidades cansan siempre igual
 const tired = () => curTurn() < me.restUntil;
 function chainNow() { const gap = curTurn() - me.lastExT - 1; return gap > 0 ? Math.max(0, me.chain - gap*2) : me.chain; }
 function exert(kind) {
@@ -1788,7 +1786,6 @@ function tryStep(dx, dy) {
     const n = npcAt('w', nx, ny); if (n) return toast(NPCDEF[n.k].animal ? '🐾 ' + NPCDEF[n.k].name : '⚠️ ' + NPCDEF[n.k].name + '. Ponte en modo pelea');
     if (playerAt('w', nx, ny)) return toast('Hay otro explorador ahí');
     if (!spend(1)) return waitMsg();
-    if (me.mode === 'run' && !tired() && me.lastExT !== T) { exert('run'); gainAttr('res', .035); }
     moveTo(nx, ny);
   } else if (isDun(me.a)) {
     const f = +me.a.slice(1), c = dcell(f, nx, ny), F = DUN[f];
@@ -1798,7 +1795,6 @@ function tryStep(dx, dy) {
     if (playerAt(me.a, nx, ny)) return toast('Hay otro explorador ahí');
     if (c === DG.UP || c === DG.DOWN) return useStairs(c);
     if (!spend(1)) return waitMsg();
-    if (me.mode === 'run' && !tired() && me.lastExT !== T) { exert('run'); gainAttr('res', .035); }
     moveTo(nx, ny);
   } else {
     if (atExit() && dy === 1 && dx === 0) return exitHouse();
@@ -1901,7 +1897,7 @@ function updateStats() {
   const st = []; if (me.bleed) st.push('🩸 Sangras'); if (me.food <= 0) st.push('😵 Mueres de hambre en ' + Math.max(0, STARVE - (curTurn() - (me.starve || curTurn()))) + ' turnos'); else if (me.food < 20) st.push('🍽️ Hambriento');
   if (coldNow()) st.push('🥶 Frío'); el('status').textContent = st.join(' · ');
   const ak = el('attrs'); if (ak) {
-    const kind = me.mode === 'run' ? 'run' : 'atk', lim = stamLimit(kind), used = Math.min(lim, chainNow());
+    const lim = stamLimit('atk'), used = Math.min(lim, chainNow());
     let h = ''; for (const k in ATT) h += '<span title="' + ATT[k][1] + '">' + ATT[k][0] + ' <b>' + Math.floor(me.att[k]) + '</b></span>';
     h += tired() ? '<span class="tired">😮‍💨 Agotado</span>' : '<span class="stam">Aliento <i>' + '●'.repeat(lim - used) + '<em>' + '●'.repeat(used) + '</em></i></span>';
     ak.innerHTML = h;
@@ -1921,10 +1917,10 @@ function renderInv() {
   const body = el('invBody'); body.innerHTML = '';
   const gl = document.createElement('div'); gl.className = 'goldline'; gl.innerHTML = 'Oro: <b></b> · Hambre: <b></b>'; const bs = gl.querySelectorAll('b'); bs[0].textContent = '🪙 ' + me.gold; bs[1].textContent = Math.round(me.food) + '%'; body.append(gl);
   { const box = document.createElement('div'); box.className = 'attbox';
-    const info = { fue:'Acierto cuerpo a cuerpo y trabajo · aguante al atacar y trabajar', res:'Turnos seguidos corriendo sin agotarte', arc:'Acierto y aguante con el arco', pun:'Acierto, críticos y aguante a puñetazos' };
+    const info = { fue:'Acierto con armas cuerpo a cuerpo, al talar, picar, cavar y recolectar', arc:'Acierto con el arco', pun:'Acierto a puñetazos' };
     for (const k in ATT) { const v = Math.floor(me.att[k]), d = document.createElement('div'); d.className = 'att';
-      const hc = k === 'res' ? '' : ' · acierto ' + Math.round(hitChance(k)*100) + '%' + (k === 'pun' ? ' · crítico ' + Math.round(fistCrit()*100) + '%' : '');
-      d.innerHTML = '<span>' + ATT[k][0] + ' <b>' + ATT[k][1] + '</b> ' + v + '/100</span><div class="ab"><div style="width:' + v + '%"></div></div><small>' + info[k] + hc + ' · aguante ' + (3 + Math.floor(v/20)) + ' turnos</small>';
+      const hc = ' · ahora aciertas el ' + Math.round(hitChance(k)*100) + '%';
+      d.innerHTML = '<span>' + ATT[k][0] + ' <b>' + ATT[k][1] + '</b> ' + v + '/100</span><div class="ab"><div style="width:' + v + '%"></div></div><small>' + info[k] + hc + '</small>';
       box.append(d); }
     body.append(box); }
   const keys = Object.keys(ITEMS).filter(k => have(k));
@@ -2000,7 +1996,7 @@ const PATRON_TIPS = [
   'Los bandidos arqueros te disparan de lejos. Acércate rápido o búscate un árbol.',
   'Enterraron a los caídos por todo el mundo con su oro. Lleva pala, y paciencia.',
   'Los cofres se rellenan con el tiempo. Los de las ruinas dan más.',
-  'Correr mucho, muchísimo, te da pulmones de hierro. A mí me costó media vida.',
+  'Practica en el campo de Brannoc: no te hará más fuerte, pero fallarás menos.',
   'Nunca bajes a la pirámide sin ungüentos. Nunca.',
   'En grupo, el faraón cae. Solo… bueno, solo hay que ser muy bueno o muy tonto.',
   'La carne asada cura un poco. La sopa de bayas, más. Y aquí la vendemos hecha.',
@@ -2775,13 +2771,42 @@ function drawAnimal(k, c, moving, now) {
 
 // --- interior ---
 function drawInterior(hid, list, now) {
-  const it = interiors[hid], wallH = 70;
-  for (let y = 0; y < IH; y++) for (let x = 0; x < IW; x++) diamond(x, y, shade(it.floor, (x+y) % 2 ? .92 : 1.04));
+  const it = interiors[hid], wallH = 70, T = curTurn(), dk = darkness(T), night = dk > .3;
+  // suelo de tablones con veta, juntas y un poco de brillo
+  for (let y = 0; y < IH; y++) for (let x = 0; x < IW; x++) {
+    const h = hash(x, y, 700 + hid); diamond(x, y, shade(it.floor, .9 + h*.16));
+    if (Q.fx) {
+      ctx.strokeStyle = 'rgba(40,22,10,.35)'; ctx.lineWidth = 1;
+      for (let k = 1; k < 3; k++) { const a = iso(x + k/3, y), b = iso(x + k/3, y + 1); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+      ctx.strokeStyle = 'rgba(255,230,190,.08)'; const g0 = iso(x + .15, y + .3 + h*.4), g1 = iso(x + .3, y + .7 + h*.2); ctx.beginPath(); ctx.moveTo(g0[0], g0[1]); ctx.lineTo(g1[0], g1[1]); ctx.stroke();
+      if (h > .86) { const n = iso(x + .5, y + .2); ctx.fillStyle = 'rgba(30,16,8,.5)'; ctx.fillRect(n[0] - 1, n[1], 2, 2); }   // clavos
+    }
+  }
+  // alfombra delante de la puerta
+  poly([iso(2.2, 2.6), iso(4.8, 2.6), iso(4.8, 5), iso(2.2, 5)], it.tavern ? '#7a2a2a' : it.healer ? '#3f6a4a' : it.artisan ? '#4a4038' : '#8a3a2a');
+  poly([iso(2.4, 2.8), iso(4.6, 2.8), iso(4.6, 4.8), iso(2.4, 4.8)], 'rgba(240,200,120,.22)');
+  poly([iso(2.7, 3.1), iso(4.3, 3.1), iso(4.3, 4.5), iso(2.7, 4.5)], it.tavern ? '#9a3a30' : it.healer ? '#5a8a5a' : it.artisan ? '#5e544a' : '#a8483a');
+  // sombras suaves bajo los muebles
+  for (const f of it.items) { const c0 = iso(f.x + f.w/2 + .1, f.y + f.d/2 + .15); ctx.fillStyle = 'rgba(20,10,4,.28)'; ctx.beginPath(); ctx.ellipse(c0[0], c0[1], 14 + f.w*12, 7 + f.d*5, 0, 0, 7); ctx.fill(); }
   diamond(IDOOR, IH, '#7a2f2f'); const c = iso(IDOOR+.5, IH+.5); emoji('🚪', c[0], c[1]-4, 18);
   const A = iso(0,0), B = iso(IW,0), D = iso(0,IH);
   poly([A, B, up(B,wallH), up(A,wallH)], shade(it.wall, .9));
   poly([A, D, up(D,wallH), up(A,wallH)], shade(it.wall, .75));
-  for (const t of [1.5, 4.5]) { const p1 = iso(t,0), p2 = iso(t+1,0); poly([up(p1,52), up(p2,52), up(p2,30), up(p1,30)], '#9fd0f0'); }
+  // zócalo de madera, vigas y viga superior
+  poly([A, B, up(B,16), up(A,16)], shade('#6b4423', .95)); poly([A, D, up(D,16), up(A,16)], shade('#6b4423', .8));
+  for (let t = 0; t <= IW; t += IW/2) { const q = iso(t, 0); poly([q, iso(t + .18, 0), up(iso(t + .18, 0), wallH), up(q, wallH)], '#5a3a1e'); }
+  for (let t = 0; t <= IH; t += IH/2) { const q = iso(0, t); poly([q, iso(0, t + .18), up(iso(0, t + .18), wallH), up(q, wallH)], '#4a2e18'); }
+  poly([up(A, wallH - 6), up(B, wallH - 6), up(B, wallH), up(A, wallH)], '#5a3a1e'); poly([up(A, wallH - 6), up(D, wallH - 6), up(D, wallH), up(A, wallH)], '#4a2e18');
+  // ventanas con marco y lo que se ve fuera (día o noche)
+  for (const t of [1.5, 4.5]) {
+    const p1 = iso(t,0), p2 = iso(t+1,0);
+    const sky = ctx.createLinearGradient(0, up(p1,52)[1], 0, up(p1,30)[1]); sky.addColorStop(0, night ? '#0c1430' : dk > .1 ? '#e8905a' : '#7cc4f0'); sky.addColorStop(1, night ? '#1a2448' : dk > .1 ? '#f2c36a' : '#cfeaf8');
+    poly([up(p1,52), up(p2,52), up(p2,30), up(p1,30)], sky);
+    if (night) { ctx.fillStyle = '#fff'; for (let k = 0; k < 3; k++) { const q = up(iso(t + .2 + k*.3, 0), 36 + (k*7) % 12); ctx.fillRect(q[0], q[1], 1.5, 1.5); } }
+    ctx.strokeStyle = '#4a2e18'; ctx.lineWidth = 2.5; ctx.beginPath(); const m1 = up(iso(t + .5, 0), 52), m2 = up(iso(t + .5, 0), 30), h1 = up(p1, 41), h2 = up(p2, 41);
+    ctx.moveTo(m1[0], m1[1]); ctx.lineTo(m2[0], m2[1]); ctx.moveTo(h1[0], h1[1]); ctx.lineTo(h2[0], h2[1]); ctx.stroke();
+    poly([up(p1,30), up(p2,30), up(p2,27), up(p1,27)], '#6b4423');
+  }
   for (const f of it.items) if (f.pat) list.push({ k: f.x + f.y + 1, x: f.x, draw: () => {
     const p = iso(f.x + .5, f.y + .5), sw = Math.sin(now/900 + f.x)*.6;
     drawHuman([p[0] + sw, p[1]], .78, { moving:false, skin:f.pat.skin, coat:f.pat.coat, shirt:rgb(f.pat.coat), pants:[70,56,44], pantsOn:true, shoes:true, hair:(f.x + f.y) % 5, hairCol:f.pat.hair, eyes:'#2a1a10', handBusy:true,
@@ -2900,6 +2925,39 @@ function drawSparks(now, dt) {
   for (let i = sparks.length - 1; i >= 0; i--) { const sp = sparks[i], a = (now - sp.t0)/420; if (a > 1) { sparks.splice(i, 1); continue; }
     sp.vy += 420*dt; sp.x += sp.vx*dt; sp.y += sp.vy*dt; ctx.strokeStyle = sp.col.replace('A', (1 - a).toFixed(2)); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sp.x, sp.y); ctx.lineTo(sp.x - sp.vx*.03, sp.y - sp.vy*.03); ctx.stroke(); }
 }
+// --- luz dentro de los edificios: fuego, lámpara, rayos de las ventanas, motas y viñeta ---
+const embers = [];
+function interiorLight(hid, now, dt) {
+  const it = interiors[hid], T = curTurn(), dk = darkness(T), day = 1 - Math.min(1, dk/.35), t = now/1000;
+  // penumbra acogedora en las esquinas
+  const ce = iso(IW/2, IH/2), vg = ctx.createRadialGradient(ce[0], ce[1] - 20, 80, ce[0], ce[1] - 20, 420);
+  vg.addColorStop(0, 'rgba(10,6,2,0)'); vg.addColorStop(1, 'rgba(10,6,2,' + (.55 + dk*.4) + ')'); ctx.fillStyle = vg; ctx.fillRect(0, 0, CW, CH);
+  if (dk > .2) { ctx.fillStyle = 'rgba(8,10,30,' + (dk*.35) + ')'; ctx.fillRect(0, 0, CW, CH); }
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  // rayos de luz de las ventanas (de día)
+  if (day > .1 && Q.fx) for (const w of [1.5, 4.5]) {
+    const a = up(iso(w, 0), 30), b = up(iso(w + 1, 0), 30), c = iso(w + 1.7, 2.6), d = iso(w + .7, 2.6), al = (.16 + .04*Math.sin(t*.7 + w))*day;
+    const g = ctx.createLinearGradient(a[0], a[1], c[0], c[1]); g.addColorStop(0, 'rgba(255,236,190,' + al + ')'); g.addColorStop(1, 'rgba(255,236,190,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(d[0], d[1]); ctx.closePath(); ctx.fill();
+    poly([iso(w + .5, 1.6), iso(w + 1.6, 1.6), iso(w + 1.6, 2.7), iso(w + .5, 2.7)], 'rgba(255,230,170,' + (.1*day) + ')');
+    for (let k = 0; k < 6; k++) { const q = (t*.05 + k/6 + w) % 1, x = a[0] + (d[0] - a[0])*q + Math.sin(t + k)*8 + 10, y = a[1] + (d[1] - a[1])*q; ctx.fillStyle = 'rgba(255,245,210,' + (.45*day*Math.sin(q*Math.PI)) + ')'; ctx.fillRect(x, y, 1.6, 1.6); }
+  }
+  // fuego de chimeneas y forjas, con brasas que suben
+  const fl = 1 + Math.sin(now/80)*.07 + Math.sin(now/210)*.06;
+  for (const f of it.items) if (f.e === '🔥') {
+    const p = up(iso(f.x + f.w/2, f.y + f.d/2), f.h*.55), r = 190*fl, g = ctx.createRadialGradient(p[0], p[1], 4, p[0], p[1], r);
+    g.addColorStop(0, 'rgba(255,170,70,.45)'); g.addColorStop(.4, 'rgba(255,120,40,.16)'); g.addColorStop(1, 'rgba(255,100,30,0)'); ctx.fillStyle = g; ctx.fillRect(p[0] - r, p[1] - r, r*2, r*2);
+    if (Q.fx && Math.random() < dt*10) embers.push({ x:p[0] + (Math.random() - .5)*12, y:p[1] - 10, vx:(Math.random() - .5)*14, vy:-30 - Math.random()*30, t0:now });
+  }
+  // lámpara colgante en el centro
+  const lp = up(iso(3.5, 2.5), 62), lr = 150 + Math.sin(now/300)*4, lg = ctx.createRadialGradient(lp[0], lp[1], 2, lp[0], lp[1] + 40, lr);
+  lg.addColorStop(0, 'rgba(255,210,130,' + (.22 + dk*.25) + ')'); lg.addColorStop(1, 'rgba(255,190,110,0)'); ctx.fillStyle = lg; ctx.fillRect(lp[0] - lr, lp[1] - lr + 40, lr*2, lr*2);
+  for (let i = embers.length - 1; i >= 0; i--) { const e = embers[i], a = (now - e.t0)/1400; if (a > 1) { embers.splice(i, 1); continue; } e.x += e.vx*dt; e.y += e.vy*dt; ctx.fillStyle = 'rgba(255,' + (150 + 80*(1 - a) | 0) + ',60,' + (1 - a) + ')'; ctx.fillRect(e.x, e.y, 2, 2); }
+  ctx.restore();
+  // la lámpara en sí
+  ctx.strokeStyle = '#2a1a0c'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(lp[0], lp[1] - 40); ctx.lineTo(lp[0], lp[1] - 6); ctx.stroke();
+  ctx.fillStyle = '#3a2a18'; ctx.fillRect(lp[0] - 6, lp[1] - 7, 12, 3); ctx.fillStyle = 'rgba(255,214,120,.95)'; ctx.fillRect(lp[0] - 4, lp[1] - 4, 8, 8); ctx.fillStyle = '#3a2a18'; ctx.fillRect(lp[0] - 6, lp[1] + 4, 12, 2);
+}
 // --- bucle principal ---
 const flakes = Array.from({ length: 90 }, () => ({ x: Math.random()*CW, y: Math.random()*CH, s: 1 + Math.random()*2, v: 20 + Math.random()*40 }));
 let lastT = performance.now(), lastTurnSeen = curTurn(), FDARK = 0;
@@ -3005,6 +3063,7 @@ function frame(now) {
   ctx.globalAlpha = 1;
   updateBlood(dt); drawBloodDrops();
   if (dun) dungeonLight(+me.a.slice(1), now);
+  else if (indoor) interiorLight(+me.a.slice(1), now, dt);
   if (!indoor) { lifeUpdate(now, dt); lifeDraw(now, dt); }
 
   // noche
