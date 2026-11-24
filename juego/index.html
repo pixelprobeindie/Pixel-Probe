@@ -338,12 +338,12 @@
       <div class="setrow"><b>Música</b><input type="range" id="musVol" min="0" max="100"></div>
       <div class="setrow"><b>Efectos y ambiente</b><input type="range" id="sfxVol" min="0" max="100"></div>
       <div class="setrow"><b>Texto de ayuda bajo los controles</b><div class="chips" id="hintChips"></div></div>
-      <div class="setrow"><b>Teclado</b><small>Flechas o WASD: moverte · 1 Correr · 3 Pelea · 4-8 acciones rápidas · Espacio: acción · I Mochila · M Mapa · G Guía · F Pantalla completa · Esc: cerrar</small></div>
+      <div class="setrow"><b>Teclado</b><small>Flechas o WASD: moverte · Q (o 1/3) Desenvainar/Envainar · 4-8 acciones rápidas · Espacio: acción · I Mochila · M Mapa · G Guía · F Pantalla completa · Esc: cerrar</small></div>
     </div>
     <div class="panel" id="guidePanel"><button class="x" data-close>✕</button><h3>📖 GUÍA DEL EXPLORADOR</h3><div id="guideBody" class="guide">
-      <h4>⏳ Turnos</h4><p>Cada 2 segundos empieza un turno para todos a la vez. Corriendo das hasta 3 pasos por turno, y en pelea 1 paso o 1 acción. Si no haces nada, el turno se pierde.</p>
+      <h4>⏳ Turnos</h4><p>Cada 2 segundos empieza un turno para todos a la vez. Con el arma envainada corres hasta 3 pasos por turno; desenvainada das 1 paso o 1 acción. Si no haces nada, el turno se pierde.</p>
       <h4>💪 Atributos</h4><p>Empiezas flojo en todo. Fuerza (armas, talar, picar, cavar), Tiro con arco (disparar) y Puños (pelear a puñetazos) suben practicando y solo mejoran tu tasa de acierto. El daño y la defensa los da el equipo. El campo de práctica de Brannoc enseña, pero muy despacio.</p>
-      <h4>⚔️ Combate</h4><p>Ponte en modo pelea (tardas un turno en desenvainar) y toca al enemigo. Los enemigos te persiguen corriendo 2 casillas por turno y también fallan. El escudo para golpes. La armadura de cuero quita 1 de daño, la de hierro 2, la de hielo 3 y la de fuego 4.</p>
+      <h4>⚔️ Combate</h4><p>Pulsa ⚔️ Desenvainar (tardas un turno en sacar el arma) y toca al enemigo. Con 🛡️ Envainar guardas el arma y el escudo a la espalda para correr. Los enemigos te persiguen corriendo 2 casillas por turno y también fallan. El escudo para golpes. La armadura de cuero quita 1 de daño, la de hierro 2, la de hielo 3 y la de fuego 4.</p>
       <h4>🗺️ Por dónde empezar</h4><p>Empieza por el 🌲 bosque, el sitio más amable para los nuevos. Después ve a la ❄️ nieve: allí están el hierro y unas pocas menas de 🧊 hielo encantado. Con él, Durgan te forja la armadura y las armas de hielo. La armadura de hielo te deja estar en el 🌋 volcán sin quemarte y picar su mineral de fuego, y los elementales de fuego no te hacen nada. Para cazar animales (carne y cuero) necesitas el 🏹 arco, que siempre llevas a la espalda; equípatelo desde la mochila o con el botón ARMA. Las armas de hielo hacen el doble de daño a los slimes y elementales de fuego; las demás armas, la mitad. Con el mineral de fuego te haces el equipo de fuego, el mejor del juego, pensado para los 10 pisos de la 🏜️ pirámide.</p>
       <h4>🍗 Hambre y salud</h4><p>La comida baja con el tiempo. Si llega a 0 tienes 35 turnos para comer o mueres. Si te atiborras, vomitas. Con buena comida recuperas vida poco a poco, y mucho más rápido en una habitación alquilada en la taberna. La curandera vende vendas y ungüentos y te cura por unas monedas. Las vendas cortan las hemorragias. En la nieve, sin armadura de cuero o una hoguera cerca, te congelas.</p>
       <h4>🪙 Economía</h4><p>El oro solo sale de cofres, cadáveres enterrados (necesitas pala) y bolsas de jugadores caídos. El mercader compra materiales y vende herramientas, ropa y pan. El artesano fabrica armas y armaduras con oro y materiales. Todo se gasta con el uso.</p>
@@ -355,8 +355,7 @@
   <div class="hud">
   <div class="cd" id="cd">¡Tu turno!</div>
   <div class="modes">
-    <button data-m="run" class="on">🏃 Correr</button>
-    <button data-m="fight" class="fight">⚔️ Pelea</button>
+    <button id="sheathBtn" class="fight">⚔️ Desenvainar</button>
   </div>
   <div class="controls">
     <div class="dwrap"><div class="dpad pad" id="dpad">
@@ -937,7 +936,7 @@ const ITEMS = {
   lanza:{ n:'Lanza', icon:'🔱', dur:70, kind:'weapon', d:'Daño 3-5. Alcanza a 2 casillas en línea recta.' },
   arco:{ n:'Arco', icon:'🏹', dur:60, kind:'weapon', d:'Daño 2-3. Dispara hasta 5 casillas. Gasta flechas. Se lleva a la espalda y es lo único con lo que puedes cazar animales.' },
   flechas:{ n:'Flechas', icon:'➶', kind:'mat', d:'Munición del arco.' },
-  escudo:{ n:'Escudo', icon:'🛡️', dur:30, kind:'gear', d:'En modo pelea bloquea a veces un golpe entero. No con armas de dos manos.' },
+  escudo:{ n:'Escudo', icon:'🛡️', dur:30, kind:'gear', d:'Con el arma desenvainada bloquea a veces un golpe entero. No con armas de dos manos.' },
   acuero:{ n:'Armadura de cuero', icon:'🦺', dur:40, kind:'gear', d:'Quita 1 de daño a cada golpe. Abriga: necesaria en la nieve.' },
   ahierro:{ n:'Armadura de hierro', icon:'🥋', dur:70, kind:'gear', d:'Quita 2 de daño a cada golpe. Forrada de cuero: también abriga.' },
   camisa:{ n:'Camisa', icon:'👕', kind:'cloth', d:'No da nada, pero te tapa. No se gasta.' },
@@ -1162,8 +1161,10 @@ function setMode(m) {
   syncTurn(); if (me.used > 0) me.used = 99;
   if (m === 'fight') me.drawTurn = curTurn() + 1;
   armed = null; me.mode = m; renderQuick();
-  document.querySelectorAll('.modes button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
-  toast(m === 'run' ? '🏃 Correr: 3 pasos por turno. El arma va a la espalda' : m === 'fight' ? '⚔️ Modo pelea: podrás atacar el próximo turno' : '🚶 Andar: 1 paso por turno');
+  me.shT0 = performance.now();   // animación de desenvainar / envainar
+  sfx('swish', .5);
+  const sb = el('sheathBtn'); if (sb) { sb.textContent = m === 'fight' ? '🛡️ Envainar' : '⚔️ Desenvainar'; sb.classList.toggle('on', m === 'fight'); }
+  toast(m === 'run' ? '🗡️ Envainas: el arma va a la espalda y corres 3 pasos por turno' : '⚔️ Desenvainas: 1 paso o 1 ataque por turno; podrás atacar el próximo turno');
   publish(); updateAct();
 }
 const canAttack = () => me.mode === 'fight' && curTurn() >= me.drawTurn && !tired();
@@ -1662,6 +1663,7 @@ function waitMsg() { toast('⏳ Espera al siguiente turno'); }
 function moveTo(x, y) {
   if (me.bleed) { stains.push({ x:me.x + .3 + Math.random()*.4, y:me.y + .3 + Math.random()*.4, r:.06 + Math.random()*.06, t0:performance.now(), a:me.a }); blood.push({ x:me.x + .5, y:me.y + .5, z:14, vx:0, vy:0, vz:0, c:'#a80e18', s:3, a:me.a }); }
   if (Q.fx && me.a === 'w') { const b0 = BIO[idx(me.x, me.y)], c0 = b0 === 0 ? '240,246,252' : b0 === 3 ? '226,200,140' : b0 === 1 ? '90,80,84' : '170,140,100'; for (let k = 0; k < 4; k++) dusts.push({ x:me.x + .5, y:me.y + .5, t0:performance.now(), dx:(Math.random() - .5)*2, c:c0 }); }
+  if (!me.wp) me.wp = []; me.wp.push([x, y]); if (me.wp.length > 6) me.wp.splice(0, me.wp.length - 6);
   me.x = x; me.y = y; stepSound(x, y); skyOn = false;
   { const key = me.a + ',' + x + ',' + y, n = groundArrows.get(key); if (n) { groundArrows.delete(key); give('flechas', n); toast('➶ Recoges ' + n + (n > 1 ? ' flechas' : ' flecha')); renderInv(); } }
   if (groundItems.has(me.a + ',' + x + ',' + y)) pickGround(x, y);
@@ -1961,7 +1963,7 @@ function gather(pl) {
 const BLOCK_MSG = {
   water:'🌊 No puedes cruzar el agua', lava:'🔥 ¡Lava! Mejor no', landmark:'⛰️ No se puede escalar',
   tipi:'⛺ Un tipi orco', adobe:'🏚️ Una casa de adobe de los bandidos', well:'🪣 El pozo de la aldea',
-  dummy:'🎯 Campo de práctica: ponte en modo pelea para golpear el muñeco o dispararle con el arco', torch:'🔥 Una antorcha',
+  dummy:'🎯 Campo de práctica: desenvaina para golpear el muñeco o dispararle con el arco', torch:'🔥 Una antorcha',
   campfire:'🔥 Una hoguera', log:'🪵 Un tronco para sentarse', pillar:'🏛️ Una columna antigua', fountain:'⛲ La fuente de la aldea. El agua está fresquísima' };
 
 function tryStep(dx, dy) {
@@ -1987,7 +1989,7 @@ function tryStep(dx, dy) {
       }
       return toast(BLOCK_MSG[typeof b === 'string' ? b : b.t] || 'No puedes pasar');
     }
-    const n = npcAt('w', nx, ny); if (n) return toast(NPCDEF[n.k].animal ? '🐾 ' + NPCDEF[n.k].name : '⚠️ ' + NPCDEF[n.k].name + '. Ponte en modo pelea');
+    const n = npcAt('w', nx, ny); if (n) return toast(NPCDEF[n.k].animal ? '🐾 ' + NPCDEF[n.k].name : '⚠️ ' + NPCDEF[n.k].name + '. Desenvaina (⚔️) para luchar');
     if (playerAt('w', nx, ny)) return toast('Hay otro explorador ahí');
     if (!spend(1)) return waitMsg();
     moveTo(nx, ny);
@@ -1995,7 +1997,7 @@ function tryStep(dx, dy) {
     const f = +me.a.slice(1), c = dcell(f, nx, ny), F = DUN[f];
     if (F.chest && nx === F.chest.x && ny === F.chest.y) { if (f === DFL && npcs.some(n => n.k === 'faraon' && n.dead < 0)) return toast('👑 El Faraón protege su tesoro. Derrótalo primero'); return openChest(F.chestObj); }
     if (c === DG.WALL) return toast('🧱 Muros de piedra antigua');
-    const n = npcAt(me.a, nx, ny); if (n) return toast('⚠️ ' + NPCDEF[n.k].name + '. Ponte en modo pelea');
+    const n = npcAt(me.a, nx, ny); if (n) return toast('⚠️ ' + NPCDEF[n.k].name + '. Desenvaina (⚔️) para luchar');
     if (playerAt(me.a, nx, ny)) return toast('Hay otro explorador ahí');
     if (c === DG.UP || c === DG.DOWN) return useStairs(c);
     if (!spend(1)) return waitMsg();
@@ -2076,7 +2078,7 @@ function useSlot(i) {
   if (k === 'fist') return equip('fist');
   if (k === 'rc') return useCrystal();
   if (k === 'wpn') { const own = ['fist', ...Object.keys(WPN).filter(w => w !== 'fist' && have(w))]; return equip(own[(own.indexOf(me.weapon) + 1) % own.length]); }
-  if (me.mode !== 'fight') return toast(ABIL[k].icon + ' ' + ABIL[k].name + ': solo en modo pelea');
+  if (me.mode !== 'fight') return toast(ABIL[k].icon + ' ' + ABIL[k].name + ': solo con el arma desenvainada');
   armed = armed === k ? null : k;
   if (armed) toast(ABIL[k].icon + ' ' + ABIL[k].name + ': toca la casilla de destino (alcance ' + range(k, me.weapon) + ')');
   renderQuick();
@@ -3096,9 +3098,11 @@ const PS = .6;   // tamaño del personaje: más o menos la altura de una puerta
 // Dibuja un humano en coordenadas locales (unos 44 px de alto) escalado por S
 function drawHuman(c, S, opt) {
   ctx.save(); ctx.translate(c[0], c[1]); ctx.scale(opt.flip ? -S : S, S);
-  const ph = opt.moving ? performance.now()/85 : 0, leg = opt.moving ? Math.sin(ph)*4 : 0, bob = opt.moving ? Math.abs(Math.sin(ph))*1.6 : 0;
+  // correr: zancadas largas, brazos que balancean y el cuerpo un poco inclinado hacia delante; andar: paso corto
+  const run = opt.moving && opt.run, ph = opt.moving ? performance.now()/(run ? 62 : 95) : 0, sn = Math.sin(ph);
+  const leg = opt.moving ? sn*(run ? 9 : 3.5) : 0, bob = opt.moving ? Math.abs(sn)*(run ? 3.2 : 1.2) : 0, arm = opt.moving ? sn*(run ? 6.5 : 2) : 0, stride = run ? sn*2.8 : 0;
   const skin = opt.skin, skinD = [skin[0]*.82, skin[1]*.8, skin[2]*.8];
-  ctx.translate(0, -bob);
+  ctx.translate(0, -bob); if (run) { ctx.translate(0, -4); ctx.rotate(.13); ctx.translate(0, 4); }
   if (opt.quiver) { ctx.save(); ctx.translate(-5, -18); ctx.rotate(-.35); ctx.fillStyle = '#6e4826'; ctx.fillRect(-2.5, -15, 5, 15); if (!INK) { for (let k = 0; k < 3; k++) { ctx.fillStyle = '#c49a64'; ctx.fillRect(-2 + k*1.6, -19, 1, 5); ctx.fillStyle = k === 1 ? '#c0392b' : '#f0f0f0'; ctx.fillRect(-2.4 + k*1.6, -21, 1.8, 3); } } ctx.restore(); }
   if (opt.bowBack) { ctx.save(); ctx.translate(2, -22); ctx.rotate(.5); ctx.strokeStyle = '#966840'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(0, 0, 13, -1.3, 1.3); ctx.stroke(); if (!INK) { ctx.strokeStyle = 'rgba(240,240,230,.9)'; ctx.lineWidth = .8; ctx.beginPath(); ctx.moveTo(Math.cos(-1.3)*13, Math.sin(-1.3)*13); ctx.lineTo(Math.cos(1.3)*13, Math.sin(1.3)*13); ctx.stroke(); } ctx.restore(); }
   if (opt.pack) { ctx.fillStyle = '#7a5230'; ctx.fillRect(-12, -29, 7, 14); ctx.fillStyle = '#5a3a1c'; ctx.fillRect(-12.5, -30, 8, 4); if (!INK) { ctx.fillStyle = '#a8763e'; ctx.fillRect(-11, -24, 5, 1.2); ctx.fillStyle = '#c8a046'; ctx.fillRect(-9, -27, 2, 2); } }
@@ -3106,14 +3110,18 @@ function drawHuman(c, S, opt) {
   else if (opt.ice && !INK) { ctx.save(); ctx.translate(0, -46); const pu = .5 + .5*Math.sin(performance.now()/260); for (const [dx, h, a] of [[-4, 9, -.35], [0, 12, 0], [4, 9, .35]]) { ctx.save(); ctx.translate(dx, 0); ctx.rotate(a); ctx.fillStyle = 'rgba(150,226,255,.95)'; ctx.beginPath(); ctx.moveTo(-2, 0); ctx.lineTo(0, -h); ctx.lineTo(2, 0); ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,' + (.5 + .5*pu) + ')'; ctx.fillRect(-.5, -h*.8, 1, h*.5); ctx.restore(); } ctx.restore(); }
   else if (opt.knight && !INK) { const sw = Math.sin(performance.now()/260)*.18; ctx.save(); ctx.translate(0, -46); ctx.rotate(-.5 + sw); ctx.fillStyle = '#b8282a'; ctx.beginPath(); ctx.ellipse(-5, -3, 7, 3.2, -.3, 0, 7); ctx.fill(); ctx.fillStyle = '#d84040'; ctx.beginPath(); ctx.ellipse(-3, -4, 4, 2, -.3, 0, 7); ctx.fill(); ctx.restore(); }   // penacho
   if (opt.back) opt.back();
+  if (opt.shieldBack) { ctx.save(); ctx.translate(-3, -1); ctx.rotate(-.18);
+    if (opt.knight) knightShield(Object.assign({}, opt, { shield:true }));
+    else { ctx.fillStyle = '#8a5a30'; ctx.beginPath(); ctx.arc(-11, -21, 7.5, 0, 7); ctx.fill(); if (!INK) { ctx.fillStyle = '#6e4624'; ctx.fillRect(-18, -22, 14, 1.4); ctx.fillStyle = '#b0b8c0'; ctx.beginPath(); ctx.arc(-11, -21, 2, 0, 7); ctx.fill(); ctx.strokeStyle = '#6a727c'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(-11, -21, 7, 0, 7); ctx.stroke(); } }
+    ctx.restore(); if (!INK) { ctx.fillStyle = '#5a3a1c'; ctx.save(); ctx.rotate(.6); ctx.fillRect(-14, -26, 22, 1.8); ctx.restore(); } }   // correa
   const STEEL = opt.fire ? [56,46,48] : opt.ice ? [150,206,232] : [150,158,170];
   ctx.fillStyle = rgb(opt.knight ? STEEL : opt.pants || skinD);
-  ctx.fillRect(-5, -12 + Math.max(0, -leg)*.6, 4, 12 + bob - Math.max(0, -leg)*.6); ctx.fillRect(1, -12 + Math.max(0, leg)*.6, 4, 12 + bob - Math.max(0, leg)*.6);
+  ctx.fillRect(-5 - stride, -12 + Math.max(0, -leg)*.6, 4, 12 + bob - Math.max(0, -leg)*.6); ctx.fillRect(1 + stride, -12 + Math.max(0, leg)*.6, 4, 12 + bob - Math.max(0, leg)*.6);
   ctx.fillStyle = rgb(opt.fire ? [64,52,54] : opt.ice ? [136,196,226] : opt.knight ? [138,146,158] : skin);
   if (opt.yawn) { const u = opt.yawn*14; ctx.fillRect(-11, -27 - u, 3, 11); if (!opt.handBusy) ctx.fillRect(8, -27 - u, 3, 11); }
-  else { ctx.fillRect(-10.5, -27 - leg*.5, 3, 11); if (!opt.handBusy) ctx.fillRect(7.5, -27 + leg*.5, 3, 11); }
+  else { ctx.fillRect(-10.5, -27 - arm, 3, 11); if (opt.reach) ctx.fillRect(5, -40, 3, 13); else if (!opt.handBusy) ctx.fillRect(7.5, -27 + arm, 3, 11); }
   ctx.fillStyle = rgb(opt.coat || skin); ctx.fillRect(-8, -28, 16, 17);
-  if (opt.shirt) { ctx.fillStyle = opt.shirt; ctx.fillRect(-8, -28, 16, 12); if (!INK) { ctx.fillStyle = 'rgba(120,90,50,.45)'; ctx.fillRect(-1, -28, 2, 6); ctx.fillRect(-3, -28, 6, 1.2); } ctx.fillStyle = opt.shirt; if (!opt.yawn) { ctx.fillRect(-10.5, -27 - leg*.5, 3, 5); if (!opt.handBusy) ctx.fillRect(7.5, -27 + leg*.5, 3, 5); } }
+  if (opt.shirt) { ctx.fillStyle = opt.shirt; ctx.fillRect(-8, -28, 16, 12); if (!INK) { ctx.fillStyle = 'rgba(120,90,50,.45)'; ctx.fillRect(-1, -28, 2, 6); ctx.fillRect(-3, -28, 6, 1.2); } ctx.fillStyle = opt.shirt; if (!opt.yawn) { ctx.fillRect(-10.5, -27 - arm, 3, 5); if (opt.reach) ctx.fillRect(5, -32, 3, 5); else if (!opt.handBusy) ctx.fillRect(7.5, -27 + arm, 3, 5); } }
   if (opt.armor === 1) { ctx.fillStyle = '#8a5a30'; ctx.fillRect(-8.5, -28.5, 17, 14); ctx.fillStyle = '#5e3c1e'; ctx.fillRect(-8.5, -17, 17, 2.5); ctx.fillStyle = '#a8763e'; ctx.fillRect(-10.5, -28.5, 4, 4); ctx.fillRect(6.5, -28.5, 4, 4); }
   if (opt.armor === 3) { ctx.fillStyle = '#3a3034'; ctx.fillRect(-8.5, -28.5, 17, 14); }
   if (opt.armor === 2) { ctx.fillStyle = '#9aa2ac'; ctx.fillRect(-8.5, -28.5, 17, 14); ctx.fillStyle = 'rgba(235,242,250,' + (.55 + .4*Math.sin(performance.now()/500)) + ')'; ctx.fillRect(-7, -27, 6, 5); ctx.fillStyle = '#6a727c'; ctx.fillRect(-8.5, -21, 17, 1.5); ctx.fillStyle = '#7a828c'; ctx.fillRect(-11, -29, 4.5, 5); ctx.fillRect(6.5, -29, 4.5, 5); }
@@ -3131,7 +3139,7 @@ function drawHuman(c, S, opt) {
   if (opt.pouch) { ctx.fillStyle = '#7a5230'; ctx.fillRect(-10, -16, 5, 5.5); if (!INK) { ctx.fillStyle = '#a8763e'; ctx.fillRect(-10, -16, 5, 1.6); } }
   if (opt.hip >= 3) { ctx.save(); ctx.translate(8, -15); ctx.rotate(.35); if (opt.hip === 3) { ctx.fillStyle = '#2a1a14'; ctx.fillRect(-1.5, 0, 3, 13); ctx.fillStyle = '#7a1a10'; ctx.fillRect(-2.8, -1.5, 5.6, 1.8); if (!INK) { ctx.fillStyle = 'rgba(255,140,40,.9)'; ctx.fillRect(-.4, 2, .8, 9); } } else { ctx.fillStyle = '#3a2418'; ctx.fillRect(-1, -4, 2, 15); ctx.fillStyle = '#2a2226'; ctx.fillRect(-5, -5, 6, 6); if (!INK) { ctx.fillStyle = '#ff8a2a'; ctx.fillRect(-5, -5, 1.2, 6); } } ctx.restore(); }
   else if (opt.hip) { ctx.save(); ctx.translate(8, -15); ctx.rotate(.35); ctx.fillStyle = '#4a2e18'; ctx.fillRect(-1.3, 0, 2.6, opt.hip === 2 ? 13 : 8); ctx.fillStyle = opt.hip === 2 ? '#c8a046' : '#5a3a22'; ctx.fillRect(-2.5, -1.5, 5, 1.6); ctx.fillStyle = '#5a3a22'; ctx.fillRect(-.8, -5, 1.6, 4); ctx.restore(); }
-  if (opt.shoes) { ctx.fillStyle = opt.fire ? '#2a2224' : opt.ice ? '#5a9cc0' : opt.knight ? '#5a626e' : '#3a2a1e'; ctx.fillRect(-6, -2 - Math.max(0, -leg)*.6 + bob, 6, 3); ctx.fillRect(0, -2 - Math.max(0, leg)*.6 + bob, 6, 3); }
+  if (opt.shoes) { ctx.fillStyle = opt.fire ? '#2a2224' : opt.ice ? '#5a9cc0' : opt.knight ? '#5a626e' : '#3a2a1e'; ctx.fillRect(-6 - stride, -2 - Math.max(0, -leg)*.6 + bob, 6, 3); ctx.fillRect(stride, -2 - Math.max(0, leg)*.6 + bob, 6, 3); }
   if (opt.naked && !opt.pantsOn && !INK) { for (let yy = 0; yy < 2; yy++) for (let xx = 0; xx < 4; xx++) { ctx.fillStyle = (xx + yy) % 2 ? '#141414' : '#444'; ctx.fillRect(-6 + xx*3, -15 + yy*3, 3, 3); } }
   const hc = opt.hairCol || '#2a1d14', hs = opt.hair || 0;
   ctx.save(); if (opt.lookUp) { ctx.translate(-.6, -1.4); }
@@ -3211,7 +3219,9 @@ function drawHeld(w, ang, skin, noArm) {
   else if (!noArm) { ctx.fillStyle = rgb(skin || SKIN); ctx.fillRect(-2.5, -2, 5, 5); }                 // puño
   ctx.restore();
 }
+let stowW = false;   // corriendo: el arma no se dibuja en la mano
 function drawWeapon(c, w, inHand, ang, skin) {
+  if (inHand && stowW) return;
   if (!inHand) {
     if (w === 'fist' || !w) return;
     ctx.save(); ctx.translate(-14, -8); ctx.rotate(-.55); ctx.translate(-9, 22); drawHeld(w, 0, null, true); ctx.restore(); return;
@@ -3238,8 +3248,23 @@ function drawPerson(o, x, y, you) {
   const yt = (performance.now() - (o.ywT0 || 0)) / 1600; if (yt >= 0 && yt < 1 && !moving) { opt.yawn = Math.sin(yt*Math.PI); opt.lookUp = true; }
   const sa = swingAngle(o.actT0), tool = sa !== null && o.actK !== 'atk' ? o.actK : null;
   if (tool) { opt.handBusy = true; opt.front = () => drawHeld(tool, sa, opt.skin); if (w !== 'fist') opt.back = () => drawWeapon([0,0], w, false); }
-  else if (m === 'fight') { opt.handBusy = true; opt.front = () => drawWeapon([0,0], w, true, sa === null ? .5 : sa, opt.skin); }
-  else if (w !== 'arco') opt.back = () => drawWeapon([0,0], w, false);   // el arco ya se ve a la espalda
+  else {
+    // desenvainar / envainar: la mano va a la espalda, saca el arma por encima del hombro y la baja (o al revés)
+    if (o.lastM !== m) { if (o.lastM !== undefined && o !== me) o.shT0 = performance.now(); o.lastM = m; }
+    const sp = (performance.now() - (o.shT0 || -1e9)) / 420, anim = sp >= 0 && sp < 1 && w !== 'fist';
+    const inHand = m === 'fight' ? !(anim && sp < .4) : (anim && sp < .6);
+    if (inHand) {
+      let ang = sa === null ? .5 : sa;
+      if (anim) ang = m === 'fight' ? -2.3 + (sp - .4)/.6*2.8 : .5 - sp/.6*2.8;   // del hombro a la guardia, o de la guardia al hombro
+      opt.handBusy = true; opt.front = () => drawWeapon([0,0], w, true, ang, opt.skin);
+    } else {
+      if (w !== 'arco') opt.back = () => drawWeapon([0,0], w, false);   // el arco ya se ve a la espalda
+      if (anim) opt.reach = true;   // brazo levantado hacia la espalda
+    }
+    if (!inHand && opt.shield) { opt.shieldBack = true; opt.shield = false; }   // el escudo también a la espalda, por fuera del arma
+  }
+  opt.flip = !!o.fl;   // mira hacia donde corre
+  opt.run = m !== 'fight' && moving;   // en modo pelea anda con el arma en la mano; si no, corre con ella guardada
   if (Q.refl && !INK && (o.a || me.a) === 'w') {
     const wx = Math.round(x), wy = Math.round(y), wet = (a, b) => inside(a, b) && (GR[idx(a, b)] === G.WATER || GR[idx(a, b)] === G.DEEP);
     if (wet(wx + 1, wy) || wet(wx, wy + 1) || GR[idx(clamp(wx,0,N-1), clamp(wy,0,N-1))] === G.BRIDGE) {
@@ -3247,7 +3272,7 @@ function drawPerson(o, x, y, you) {
     }
   }
   drawHuman(c, PS, opt);
-  if (!INK && m === 'run' && moving) { ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 2; for (const k of [0, 5]) { ctx.beginPath(); ctx.moveTo(c[0]-10-k, c[1]-14+k); ctx.lineTo(c[0]-18-k, c[1]-14+k); ctx.stroke(); } }
+  if (!INK && m === 'run' && moving) { const sg = o.fl ? -1 : 1; ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 2; for (const k of [0, 5]) { ctx.beginPath(); ctx.moveTo(c[0] - sg*(10 + k), c[1]-14+k); ctx.lineTo(c[0] - sg*(18 + k), c[1]-14+k); ctx.stroke(); } }
   if (!INK) overlays.push(() => {
     label(c, o.name, you ? '#ffd166' : '#fff', 36);
     if (m === 'fight' || o.hp < MAXHP) hpBar(c, o.hp, MAXHP, 52);
@@ -3266,7 +3291,7 @@ function faceFlip(n, x, y) {
 function drawNpc(n, x, y, now) {
   const D = NPCDEF[n.k], base = iso(x+.5, y+.5);
   const moving = Math.abs(n.x - x) + Math.abs(n.y - y) > .05;
-  if (D.animal) { ctx.save(); ctx.translate(base[0], base[1]); ctx.scale(.7, .7); drawAnimal(n.k, [0,0], moving, now); ctx.restore(); return; }
+  if (D.animal) { ctx.save(); ctx.translate(base[0], base[1]); ctx.scale(n.fl ? -.7 : .7, .7); drawAnimal(n.k, [0,0], moving, now + n.id*97); ctx.restore(); return; }
   if (D.elem) { drawElemental(n, base, now); if (n.hp < (n.mhp || D.hp) && !INK) overlays.push(() => hpBar(base, n.hp, n.mhp || D.hp, 44)); return; }
   if (D.foe === 'slime') { drawSlime(base, moving, now, n.st === 1, n.id); if (n.hp < (n.mhp || D.hp) && !INK) overlays.push(() => hpBar(base, n.hp, n.mhp || D.hp, 30)); return; }
   if (D.charge) { const stun = isHost ? curTurn() < (n.stun || 0) : n.tz, lg = (now - (n.lgT0 || -1e9)) / 420;
@@ -3280,12 +3305,13 @@ function drawNpc(n, x, y, now) {
                mummy:{ skin:[214,200,160], coat:[226,214,178], pants:[206,194,156], hairCol:'#cbb98a', eyes:'#ffe14a' },
                guard:{ skin:[48,42,40], coat:[206,166,62], pants:[36,40,70], hairCol:'#111', eyes:'#ffcc00', armor:2 },
                boss:{ skin:[120,96,66], coat:[230,190,60], pants:[64,40,120], hairCol:'#111', eyes:'#ff2a2a', armor:2 } }[D.foe];
-  const flip = faceFlip(n, x, y);
-  if (DS) drawHuman(base, S, Object.assign({ flip, moving, handBusy:true, hair:0, front:() => { drawWeapon([0,0], D.w, true, nAng, DS.skin); if (D.boss) { ctx.fillStyle = '#f2c94c'; ctx.fillRect(-8, -50, 16, 5); ctx.fillRect(-8, -55, 3, 5); ctx.fillRect(-1.5, -56, 3, 6); ctx.fillRect(5, -55, 3, 5); } if (D.foe === 'mummy' && !INK) { ctx.fillStyle = 'rgba(120,100,60,.5)'; for (let k = 0; k < 4; k++) ctx.fillRect(-8, -28 + k*5, 16, 1.2); } } }, DS));
-  else drawHuman(base, S, orc
+  const flip = faceFlip(n, x, y), nrun = moving && !!n.tg && Math.abs(n.x - x) + Math.abs(n.y - y) > .35;
+  const stow = o => { if (!nrun) return o; const f = o.front; o.run = true; o.handBusy = false; o.front = () => { stowW = true; try { f && f(); } finally { stowW = false; } }; if (D.w && D.w !== 'none' && D.w !== 'fist') o.back = () => drawWeapon([0,0], D.w, false); return o; };
+  if (DS) drawHuman(base, S, stow(Object.assign({ flip, moving, handBusy:true, hair:0, front:() => { drawWeapon([0,0], D.w, true, nAng, DS.skin); if (D.boss) { ctx.fillStyle = '#f2c94c'; ctx.fillRect(-8, -50, 16, 5); ctx.fillRect(-8, -55, 3, 5); ctx.fillRect(-1.5, -56, 3, 6); ctx.fillRect(5, -55, 3, 5); } if (D.foe === 'mummy' && !INK) { ctx.fillStyle = 'rgba(120,100,60,.5)'; for (let k = 0; k < 4; k++) ctx.fillRect(-8, -28 + k*5, 16, 1.2); } } }, DS)));
+  else drawHuman(base, S, stow(orc
     ? { flip, moving, handBusy:true, skin:[108,150,78], coat:[132,112,92], pants:[90,74,60], hair:0, hairCol:'#2a2a2a', tusks:true, eyes:'#c22', front:() => drawWeapon([0,0], D.w, true, nAng, [108,150,78]) }
     : { flip, moving, handBusy:true, skin:[204,150,116], coat:[210,172,108], pants:[130,100,66], hair:0, hairCol:'#ece0bc', eyes:'#1b1b1b',
-        front:() => { ctx.fillStyle = '#be362c'; ctx.fillRect(-7, -30, 14, 3); drawWeapon([0,0], D.w, true, nAng, [204,150,116]); } });
+        front:() => { ctx.fillStyle = '#be362c'; ctx.fillRect(-7, -30, 14, 3); drawWeapon([0,0], D.w, true, nAng, [204,150,116]); } }));
   if (!INK) overlays.push(() => {
     const top = 44*S;
     if (n.st === 1) { const b = .5 + .5*Math.sin(now/90); ctx.fillStyle = 'rgb(255,' + (44 + b*60|0) + ',44)'; ctx.fillRect(base[0]-3, base[1]-top-30, 6, 14); ctx.fillRect(base[0]-3, base[1]-top-13, 6, 5); }
@@ -3294,14 +3320,19 @@ function drawNpc(n, x, y, now) {
   });
 }
 function drawAnimal(k, c, moving, now) {
-  const leg = moving ? Math.sin(now/100)*2 : 0;
+  const sn = moving ? Math.sin(now/55) : 0, leg = sn*4.5, hop = moving ? Math.abs(Math.sin(now/55))*(k === 'rabbit' ? 5 : 2.5) : 0;
+  c = [c[0], c[1] - hop];
   const S = { deer:[[155,118,82],[196,155,112],22,14,16], rabbit:[[190,175,155],[226,214,194],12,8,4], penguin:[[30,34,44],[238,240,244],12,18,2], goat:[[222,216,202],[246,242,232],18,11,12],
               camel:[[196,150,96],[226,184,124],26,14,20], lizard:[[124,152,72],[176,196,104],18,4,2], salamander:[[232,92,40],[255,170,70],16,4,2] }[k];
   const [col, colL, w, h, lh] = S;
-  shadowAt(c, w*.7, 5);
-  if (k === 'penguin') { ctx.fillStyle = rgb(col); ctx.fillRect(c[0]-6, c[1]-20, 12, 20); ctx.fillStyle = rgb(colL); ctx.fillRect(c[0]-3, c[1]-16, 7, 14); ctx.fillStyle = '#f0a032'; ctx.fillRect(c[0]+4, c[1]-17, 5, 2); return; }
+  shadowAt([c[0], c[1] + hop], w*.7, 5);
+  if (k === 'penguin') { ctx.save(); ctx.translate(c[0], c[1]); ctx.rotate(sn*.18); ctx.translate(-c[0], -c[1]); ctx.fillStyle = rgb(col); ctx.fillRect(c[0]-6, c[1]-20, 12, 20); ctx.fillStyle = rgb(colL); ctx.fillRect(c[0]-3, c[1]-16, 7, 14); ctx.fillStyle = '#f0a032'; ctx.fillRect(c[0]+4, c[1]-17, 5, 2); ctx.restore(); return; }
   ctx.fillStyle = rgb(col);
-  if (lh > 3) { ctx.fillRect(c[0] - w/2 + 2, c[1] - lh, 3, lh + leg); ctx.fillRect(c[0] + w/2 - 5, c[1] - lh, 3, lh - leg); }
+  if (lh > 3) {   // cuatro patas en galope: delanteras y traseras alternadas, con zancada
+    const st = sn*2.5;
+    ctx.fillRect(c[0] - w/2 + 2 - st, c[1] - lh, 3, lh + Math.max(0, leg)*.4 + hop); ctx.fillRect(c[0] - w/2 + 6 + st, c[1] - lh, 3, lh + Math.max(0, -leg)*.4 + hop);
+    ctx.fillRect(c[0] + w/2 - 9 + st, c[1] - lh, 3, lh + Math.max(0, -leg)*.4 + hop); ctx.fillRect(c[0] + w/2 - 5 - st, c[1] - lh, 3, lh + Math.max(0, leg)*.4 + hop); }
+  else if (moving && k !== 'penguin') { ctx.fillRect(c[0] - w/2 + 1 - sn*2, c[1] - 2, 3, 2 + hop); ctx.fillRect(c[0] + w/2 - 4 + sn*2, c[1] - 2, 3, 2 + hop); }
   ctx.fillRect(c[0] - w/2, c[1] - lh - h, w, h);
   ctx.fillStyle = rgb(colL); ctx.fillRect(c[0] - w/2 + 2, c[1] - lh - h, w - 4, 3);
   ctx.fillStyle = rgb(col); ctx.fillRect(c[0] + w/2 - 2, c[1] - lh - h - 8, 8, 8);
@@ -3590,7 +3621,7 @@ function interiorLight(hid, now, dt) {
 }
 // ---------- jabalí ----------
 function drawBoar(base, moving, now, charging, stunned, flip) {
-  const t = now/1000, leg = moving || charging ? Math.sin(now/(charging ? 40 : 90))*3 : 0, sh = charging ? Math.sin(now/30)*1.2 : 0;
+  const t = now/1000, leg = moving || charging ? Math.sin(now/(charging ? 38 : 55))*5.5 : 0, sh = charging ? Math.sin(now/30)*1.2 : 0;
   ctx.save(); ctx.translate(base[0] + sh, base[1]); if (flip) ctx.scale(-1, 1);
   ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(0, 1, 15, 5, 0, 0, 7); ctx.fill();
   ctx.fillStyle = '#3a2618'; for (const [lx, ph] of [[-9, 0], [-4, 1], [5, 1], [9, 0]]) ctx.fillRect(lx - 1.5, -7, 3, 7 + (ph ? leg : -leg)*.4);
@@ -3941,13 +3972,41 @@ function babble(text, who) {
 const flakes = Array.from({ length: 90 }, () => ({ x: Math.random()*CW, y: Math.random()*CH, s: 1 + Math.random()*2, v: 20 + Math.random()*40 }));
 let lastT = performance.now(), lastTurnSeen = curTurn(), FDARK = 0;
 const indoor0 = () => me.a !== 'w';
+const RUN_SPD = 5.2;   // casillas por segundo al correr
+// avanza fx/fy hacia (tx,ty) a lo sumo 'step' casillas, primero por el eje con más distancia; devuelve lo que sobra
+function glide(o, tx, ty, step) {
+  if (!Number.isFinite(o.fx) || !Number.isFinite(o.fy)) { o.fx = tx; o.fy = ty; }
+  if (!Number.isFinite(tx) || !Number.isFinite(ty) || !(step > 0)) return 0;
+  let dx = tx - o.fx, dy = ty - o.fy;
+  if (Math.abs(dx) + Math.abs(dy) > 6) { o.fx = tx; o.fy = ty; return 0; }   // saltos grandes (puertas, cristal…): sin animación
+  if (Math.abs(dx) < 1e-3 && Math.abs(dy) < 1e-3) { o.fx = tx; o.fy = ty; return step; }
+  const sx = dx - dy; if (Math.abs(sx) > .02) o.fl = sx < 0;   // mira hacia donde corre
+  const firstX = Math.abs(dx) >= Math.abs(dy) && Math.abs(dx) > 1e-3 && !(Math.abs(dy) > 1e-3 && Math.abs(dy) < .999 && Math.abs(dy) < Math.abs(dx) && Math.abs(dy - Math.round(dy)) > 1e-3);
+  // termina antes el eje que está a medias (para no cortar esquinas)
+  const fracY = Math.abs(o.fy - Math.round(o.fy)) > 1e-3, fracX = Math.abs(o.fx - Math.round(o.fx)) > 1e-3;
+  const useX = fracX ? true : fracY ? false : Math.abs(dx) >= Math.abs(dy);
+  if (useX && Math.abs(dx) > 1e-3) { const m = Math.min(Math.abs(dx), step); o.fx += Math.sign(dx)*m; return step - m > 1e-4 ? glide(o, tx, ty, step - m) : 0; }
+  const m = Math.min(Math.abs(dy), step); o.fy += Math.sign(dy)*m; return step - m > 1e-4 && Math.abs(tx - o.fx) > 1e-3 ? glide(o, tx, ty, step - m) : step - m;
+}
+// el bucle nunca se detiene: si un dibujo falla, se avisa y el juego sigue (antes un fallo congelaba al personaje)
+let frameErrT = 0;
 function frame(now) {
+  if (!Number.isFinite(now)) now = performance.now();
+  try { frameInner(now); }
+  catch (e) { console.error(e); if (performance.now() - frameErrT > 20000) { frameErrT = performance.now(); try { toast('⚠️ Error de dibujo (el juego sigue): ' + String(e && e.message || e).slice(0, 80)); } catch (e2) {} } }
+  requestAnimationFrame(frame);
+}
+function frameInner(now) {
   perfTick(now);
-  const dt = Math.min(.1, (now - lastT)/1000); lastT = now;
-  const k = Math.min(1, dt*12);
-  me.fx += (me.x - me.fx)*k; me.fy += (me.y - me.fy)*k;
-  for (const o of others.values()) { o.fx += (o.x - o.fx)*k; o.fy += (o.y - o.fy)*k; }
-  for (const n of npcs) { n.fx += (n.x - n.fx)*k*.8; n.fy += (n.y - n.fy)*k*.8; }
+  const dt = clamp((now - lastT)/1000, 0, .1); lastT = now;
+  // el personaje corre de casilla en casilla (sin teletransportarse): velocidad constante y por los ejes, como en la cuadrícula
+  if (!me.wp) me.wp = [];
+  if (me.wp.length && (Math.abs(me.wp[0][0] - me.fx) + Math.abs(me.wp[0][1] - me.fy) > 2.6 || me.wp.length > 4)) me.wp.splice(0, me.wp.length - (me.wp.length > 4 ? 3 : 0));
+  if (Math.abs(me.x - me.fx) + Math.abs(me.y - me.fy) > .01) { me.lagT = (me.lagT || 0) + dt; if (me.lagT > 1.5) { me.fx = me.x; me.fy = me.y; me.wp.length = 0; me.lagT = 0; } } else me.lagT = 0;
+  { let budget = RUN_SPD*dt*(me.wp.length > 2 ? 1.6 : 1);
+    while (budget > 0) { const tg = me.wp[0] || [me.x, me.y], r = glide(me, tg[0], tg[1], budget); budget = r; if (me.wp.length && Math.abs(me.fx - tg[0]) + Math.abs(me.fy - tg[1]) < 1e-3) { me.wp.shift(); if (!me.wp.length) break; } else break; } }
+  for (const o of others.values()) glide(o, o.x, o.y, RUN_SPD*dt*(Math.abs(o.x - o.fx) + Math.abs(o.y - o.fy) > 2 ? 1.5 : 1));
+  for (const n of npcs) glide(n, n.x, n.y, RUN_SPD*.85*dt*(Math.abs(n.x - n.fx) + Math.abs(n.y - n.fy) > 2 ? 1.5 : 1));
 
   const T = curTurn(); FDARK = darkness(T); const PUD = indoor0() ? 0 : puddleLevel(T);
   if (T !== lastTurnSeen) { for (let t = lastTurnSeen + 1; t <= T && t - lastTurnSeen < 5; t++) bombTick(t);
@@ -4157,7 +4216,6 @@ function frame(now) {
     ? (skyOn ? '🌤️ Mirando al cielo · ' : '') + (me.mode === 'run' ? 'Te quedan ' + left + (left === 1 ? ' paso' : ' pasos') : me.mode === 'fight' ? (curTurn() < me.drawTurn ? 'Preparándote para pelear… puedes moverte' : 'Puedes moverte, atacar o usar una habilidad') : 'Puedes moverte o trabajar') + ' · quedan ' + secs
     : 'Acción hecha · siguiente turno en ' + secs;
   document.querySelectorAll('#dpad .arm').forEach(b => b.disabled = left === 0);
-  requestAnimationFrame(frame);
 }
 
 // --- mapa entero: lo explorado se ve, lo demás queda en niebla ---
@@ -4257,7 +4315,7 @@ function padPress(dx, dy) {
   setTimeout(() => { pad.className = 'dpad pad'; arm.classList.remove('press'); }, 160);
 }
 document.querySelectorAll('#dpad .arm').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); const [dx, dy] = b.dataset.d.split(',').map(Number); padPress(dx, dy); if (started) tryStep(dx, dy); }));
-document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.m)));
+el('sheathBtn').addEventListener('click', () => setMode(me.mode === 'fight' ? 'run' : 'fight'));
 el('act').addEventListener('click', () => { if (me.mode === 'fight' && (me.a === 'w' || isDun(me.a)) && nearestFoe() && !/Salir|Subir|Bajar/.test(el('act').textContent)) return attackNearest(); const a = currentAction(); if (a) a.run(); });
 el('mapBtn').addEventListener('click', () => el('mini').classList.toggle('show'));
 el('invBtn').addEventListener('click', () => { const p = el('invPanel'), show = !p.classList.contains('show'); closePanels(); if (show) { p.classList.add('show'); renderInv(); } });
@@ -4272,7 +4330,7 @@ window.addEventListener('keydown', ev => {
   if (key === 'i') return el('invBtn').click();
   if (key === 'g') return el('guideBtn').click();
   if (key === 'f') return el('fsBtn').click();
-  if (key === '1' || key === '2') return setMode('run'); if (key === '3') return setMode('fight');
+  if (key === '1' || key === '2') return setMode('run'); if (key === '3') return setMode('fight'); if (key === 'q' || key === 'Q') return setMode(me.mode === 'fight' ? 'run' : 'fight');
   if (key >= '4' && key <= '8') return useSlot(+key - 4);
   if (key === ' ' || key === 'Enter') { ev.preventDefault(); const a = currentAction(); if (a) a.run(); return; }
   const d = KEYS[key]; if (d) { ev.preventDefault(); padPress(d[0], d[1]); tryStep(d[0], d[1]); }
@@ -4315,7 +4373,7 @@ cv.addEventListener('click', ev => {
     }
     return;
   }
-  if (man > 1) toast(me.mode === 'run' ? 'Corriendo llegas hasta 3 casillas por turno' : 'En modo pelea das 1 paso: toca una casilla junto a ti');
+  if (man > 1) toast(me.mode === 'run' ? 'Corriendo llegas hasta 3 casillas por turno' : 'Con el arma desenvainada das 1 paso: toca una casilla junto a ti');
 });
 
 // =====================================================================
