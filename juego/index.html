@@ -344,7 +344,7 @@
       <h4>⏳ Turnos</h4><p>Cada 2 segundos empieza un turno para todos a la vez. Corriendo das hasta 3 pasos por turno, y en pelea 1 paso o 1 acción. Si no haces nada, el turno se pierde.</p>
       <h4>💪 Atributos</h4><p>Empiezas flojo en todo. Fuerza (armas, talar, picar, cavar), Tiro con arco (disparar) y Puños (pelear a puñetazos) suben practicando y solo mejoran tu tasa de acierto. El daño y la defensa los da el equipo. El campo de práctica de Brannoc enseña, pero muy despacio.</p>
       <h4>⚔️ Combate</h4><p>Ponte en modo pelea (tardas un turno en desenvainar) y toca al enemigo. Los enemigos te persiguen corriendo 2 casillas por turno y también fallan. El escudo para golpes. La armadura de cuero quita 1 de daño, la de hierro 2, la de hielo 3 y la de fuego 4.</p>
-      <h4>🗺️ Por dónde empezar</h4><p>Empieza por el 🌲 bosque, el sitio más amable para los nuevos. Después ve a la ❄️ nieve: allí están el hierro y unas pocas menas de 🧊 hielo encantado. Con él, Durgan te forja la armadura y las armas de hielo. La armadura de hielo te deja estar en el 🌋 volcán sin quemarte y picar su mineral de fuego, y los elementales de fuego no te hacen nada. Las armas de hielo hacen el doble de daño a los slimes y elementales de fuego; las demás armas, la mitad. Con el mineral de fuego te haces el equipo de fuego, el mejor del juego, pensado para los 10 pisos de la 🏜️ pirámide.</p>
+      <h4>🗺️ Por dónde empezar</h4><p>Empieza por el 🌲 bosque, el sitio más amable para los nuevos. Después ve a la ❄️ nieve: allí están el hierro y unas pocas menas de 🧊 hielo encantado. Con él, Durgan te forja la armadura y las armas de hielo. La armadura de hielo te deja estar en el 🌋 volcán sin quemarte y picar su mineral de fuego, y los elementales de fuego no te hacen nada. Para cazar animales (carne y cuero) necesitas el 🏹 arco, que siempre llevas a la espalda; equípatelo desde la mochila o con el botón ARMA. Las armas de hielo hacen el doble de daño a los slimes y elementales de fuego; las demás armas, la mitad. Con el mineral de fuego te haces el equipo de fuego, el mejor del juego, pensado para los 10 pisos de la 🏜️ pirámide.</p>
       <h4>🍗 Hambre y salud</h4><p>La comida baja con el tiempo. Si llega a 0 tienes 35 turnos para comer o mueres. Si te atiborras, vomitas. Con buena comida recuperas vida poco a poco, y mucho más rápido en una habitación alquilada en la taberna. La curandera vende vendas y ungüentos y te cura por unas monedas. Las vendas cortan las hemorragias. En la nieve, sin armadura de cuero o una hoguera cerca, te congelas.</p>
       <h4>🪙 Economía</h4><p>El oro solo sale de cofres, cadáveres enterrados (necesitas pala) y bolsas de jugadores caídos. El mercader compra materiales y vende herramientas, ropa y pan. El artesano fabrica armas y armaduras con oro y materiales. Todo se gasta con el uso.</p>
       <h4>💀 Muerte</h4><p>Es definitiva: dejas una bolsa con todo donde caíste y empiezas un personaje nuevo, desnudo, en la posada.</p>
@@ -935,7 +935,7 @@ const ITEMS = {
   espada:{ n:'Espada (1 mano)', icon:'🗡️', dur:80, kind:'weapon', d:'Daño 3-5. Espada de una mano: con un escudo en la otra.' },
   mandoble:{ n:'Mandoble (2 manos)', icon:'⚔️', dur:100, kind:'weapon', d:'Daño 5-8. Pesado: esquivas 1 casilla menos.' },
   lanza:{ n:'Lanza', icon:'🔱', dur:70, kind:'weapon', d:'Daño 3-5. Alcanza a 2 casillas en línea recta.' },
-  arco:{ n:'Arco', icon:'🏹', dur:60, kind:'weapon', d:'Daño 2-3. Dispara hasta 5 casillas. Gasta flechas.' },
+  arco:{ n:'Arco', icon:'🏹', dur:60, kind:'weapon', d:'Daño 2-3. Dispara hasta 5 casillas. Gasta flechas. Se lleva a la espalda y es lo único con lo que puedes cazar animales.' },
   flechas:{ n:'Flechas', icon:'➶', kind:'mat', d:'Munición del arco.' },
   escudo:{ n:'Escudo', icon:'🛡️', dur:30, kind:'gear', d:'En modo pelea bloquea a veces un golpe entero. No con armas de dos manos.' },
   acuero:{ n:'Armadura de cuero', icon:'🦺', dur:40, kind:'gear', d:'Quita 1 de daño a cada golpe. Abriga: necesaria en la nieve.' },
@@ -945,7 +945,7 @@ const ITEMS = {
   zapatos:{ n:'Zapatos', icon:'👞', kind:'cloth', d:'No da nada, pero te tapa. No se gasta.' },
   panuelo:{ n:'Pañuelo', icon:'🧣', kind:'cloth', d:'Te tapa boca y nariz: te protege de las tormentas de arena y de las ventiscas. No se gasta.' },
   mochila:{ n:'Mochila', icon:'🎒', kind:'gear', d:'Pasas de 6 a 16 huecos en la bolsa. No se gasta.' },
-  cinturon:{ n:'Cinturón', icon:'🎗️', kind:'gear', d:'Te deja llevar a mano 3 cosas: comida, armas de una mano y el arco.' },
+  cinturon:{ n:'Cinturón', icon:'🎗️', kind:'gear', d:'Te deja llevar a mano 3 cosas: comida y armas de una mano. El arco va siempre a la espalda.' },
   pan:{ n:'Pan', icon:'🍞', kind:'food', food:25, d:'Quita un poco el hambre.' },
   bayas:{ n:'Bayas', icon:'🫐', kind:'food', food:8, d:'De los arbustos del bosque. Con 3 se hace sopa en la hoguera.' },
   carne:{ n:'Carne cruda', icon:'🥩', kind:'food', food:10, d:'Mejor asada en la hoguera de la aldea.' },
@@ -968,7 +968,7 @@ const ITEMS = {
   cuero:{ n:'Cuero', icon:'🟫', kind:'mat', d:'De los animales.' },
   fibra:{ n:'Fibra', icon:'🌿', kind:'mat', d:'De los arbustos.' },
   cristal:{ n:'Cristal de regreso', icon:'💎', kind:'use', d:'Rómpelo y vuelves a la plaza de la aldea desde cualquier parte, incluso desde la pirámide. Gasta tu turno y se rompe al usarlo.' } };
-const BELTOK = k => k === 'arco' || k === 'cuchillo' || k === 'espada' || k === 'palo' || k === 'evolc' || k === 'hvolc' || k === 'ehielo' || k === 'hhielo' || (ITEMS[k] && ITEMS[k].kind === 'food');
+const BELTOK = k => k === 'cuchillo' || k === 'espada' || k === 'palo' || k === 'evolc' || k === 'hvolc' || k === 'ehielo' || k === 'hhielo' || (ITEMS[k] && ITEMS[k].kind === 'food');
 const WPN = { fist:{ d:[1,1], r:1 }, palo:{ d:[1,2], r:1 }, evolc:{ d:[6,8], r:1 }, hvolc:{ d:[6,8], r:1 }, ehielo:{ d:[4,6], r:1, ice:1 }, hhielo:{ d:[4,6], r:1, ice:1 }, cuchillo:{ d:[2,3], r:1 }, espada:{ d:[3,5], r:1 }, mandoble:{ d:[5,8], r:1, heavy:1, two:1 }, lanza:{ d:[3,5], r:2, two:1 }, arco:{ d:[2,3], r:5, two:1, ranged:1 } };
 const DMG = new Proxy({}, { get:(t, k) => (WPN[k] || WPN.fist).d });
 const SHOP = { cuchillo:10, pala:12, hacha:14, pico:14, mochila:18, panuelo:4, cristal:6 };
@@ -1736,7 +1736,7 @@ const eqPack = () => {
   const belt = have('cinturon') ? 1 : 0, bi = belt ? me.belt : [];
   const hip = bi.includes('evolc') && me.weapon !== 'evolc' ? 3 : bi.includes('hvolc') && me.weapon !== 'hvolc' ? 4 : bi.includes('espada') && me.weapon !== 'espada' ? 2 : bi.includes('cuchillo') && me.weapon !== 'cuchillo' ? 1 : 0;
   return [have('camisa') ? 1 : 0, have('pantalones') ? 1 : 0, have('zapatos') ? 1 : 0, ({ avolc:3, ahierro:2, acuero:1, ahielo:4 })[armorOf()] || 0, hasShield() ? 1 : 0,
-          belt, have('flechas') ? 1 : 0, have('arco') && me.weapon !== 'arco' ? 1 : 0, hip, bi.some(k => k && ITEMS[k].kind === 'food') ? 1 : 0, have('mochila') ? 1 : 0, have('panuelo') ? 1 : 0];
+          belt, have('flechas') ? 1 : 0, have('arco') && !(me.weapon === 'arco' && me.mode === 'fight') ? 1 : 0, hip, bi.some(k => k && ITEMS[k].kind === 'food') ? 1 : 0, have('mochila') ? 1 : 0, have('panuelo') ? 1 : 0];
 };
 function give(k, n, noDrop) {
   if (!n || !ITEMS[k]) return 0;
@@ -1808,6 +1808,7 @@ function attack(t) {
   if (tired()) return tiredMsg();
   if (!canAttack()) return toast('🗡️ Aún te estás preparando para pelear');
   if (WPN[me.weapon].ranged && !have('flechas')) return toast('🏹 No te quedan flechas. Durgan, el artesano, las fabrica');
+  if (t.npc && NPCDEF[t.npc.k].animal && !WPN[me.weapon].ranged) return toast(have('arco') ? '🏹 Los animales huyen antes de que te acerques: equípate el arco (desde la mochila o ⚔️ ARMA) para cazar' : '🏹 Para cazar animales necesitas un arco. Durgan, el artesano, lo fabrica');
   if (!spendAll()) return waitMsg();
   let d = rollDmg(); const fist = me.weapon === 'fist', ranged = WPN[me.weapon].ranged, sk = fist ? 'pun' : ranged ? 'arc' : 'fue';
   const gf = t.dummy ? .07 : t.npc && NPCDEF[t.npc.k].animal ? .5 : 1;   // el muñeco enseña muchísimo más despacio
@@ -2123,6 +2124,7 @@ function wornCount(k) {
   const n = have(k); if (!n) return 0;
   if (WEARABLE.includes(k)) return 1;
   if (k === 'acuero' || k === 'ahierro' || k === 'avolc' || k === 'ahielo') return armorOf() === k ? 1 : 0;
+  if (k === 'arco') return 1;   // a la espalda: no ocupa hueco en la bolsa
   if (ITEMS[k].kind === 'weapon') return (me.weapon === k || me.belt.includes(k)) ? 1 : 0;
   if (ITEMS[k].kind === 'food' && me.belt.includes(k) && have('cinturon')) return Math.min(n, 5);   // lo que cabe en el cinturón
   if (k === 'flechas' && have('arco')) return Math.min(n, 20);                                       // carcaj
@@ -2244,7 +2246,7 @@ function renderBelt() {
     let k = me.belt[i]; if (k && !have(k)) k = me.belt[i] = null;
     if (me.weapon !== 'fist' && !have(me.weapon)) me.weapon = 'fist';
     b.innerHTML = on ? (k ? iconHTML(k) + (ITEMS[k].dur ? '' : '<small>' + have(k) + '</small>') : '·') : '🔒';
-    b.title = on ? (k ? ITEMS[k].n : 'Hueco libre: añade comida, un arma de una mano o el arco desde la mochila') : 'Necesitas un cinturón (mercader o artesano)';
+    b.title = on ? (k ? ITEMS[k].n : 'Hueco libre: añade comida o un arma de una mano desde la mochila') : 'Necesitas un cinturón (mercader o artesano)';
     b.classList.toggle('on', !!k && me.weapon === k);
   });
 }
@@ -2310,7 +2312,7 @@ const PATRON_TIPS = [
   'En grupo, el faraón cae. Solo… bueno, solo hay que ser muy bueno o muy tonto.',
   'La carne asada cura un poco. La sopa de bayas, más. Y aquí la vendemos hecha.',
   'En la nieve, sin armadura de cuero, te congelas. Ni te lo pienses.',
-  'Los animales huyen corriendo. Con un arco, la caza es mucho más fácil.' ];
+  'Los animales huyen corriendo: solo puedes cazarlos con el arco, que se lleva a la espalda.' ];
 const PATRON_CHAT = ['¿Una partida de dados? ¿No? Pues déjame beber en paz.', 'Hip… ¿decías algo?', 'Esta cerveza está aguada. Como siempre.', 'Ayer vi a un tipo desnudo por la plaza. Este mundo está loco.', 'Hoy no tengo ganas de hablar, forastero.'];
 function talkPatron(f) { sfx('ui'); showDialog([Math.random() < .65 ? PATRON_TIPS[(Math.random()*PATRON_TIPS.length)|0] : PATRON_CHAT[(Math.random()*PATRON_CHAT.length)|0]], null, f.pat.name); }
 function buyTavern(k) { if (me.gold < TAVERN[k]) return; if (!fits(k, 1)) return toast('🎒 No te cabe en la bolsa'); me.gold -= TAVERN[k]; sfx('coin'); give(k, 1); toast('🍺 Compras: ' + ITEMS[k].n); updateStats(); renderPanel(); renderInv(); save(); }
@@ -3237,7 +3239,7 @@ function drawPerson(o, x, y, you) {
   const sa = swingAngle(o.actT0), tool = sa !== null && o.actK !== 'atk' ? o.actK : null;
   if (tool) { opt.handBusy = true; opt.front = () => drawHeld(tool, sa, opt.skin); if (w !== 'fist') opt.back = () => drawWeapon([0,0], w, false); }
   else if (m === 'fight') { opt.handBusy = true; opt.front = () => drawWeapon([0,0], w, true, sa === null ? .5 : sa, opt.skin); }
-  else opt.back = () => drawWeapon([0,0], w, false);
+  else if (w !== 'arco') opt.back = () => drawWeapon([0,0], w, false);   // el arco ya se ve a la espalda
   if (Q.refl && !INK && (o.a || me.a) === 'w') {
     const wx = Math.round(x), wy = Math.round(y), wet = (a, b) => inside(a, b) && (GR[idx(a, b)] === G.WATER || GR[idx(a, b)] === G.DEEP);
     if (wet(wx + 1, wy) || wet(wx, wy + 1) || GR[idx(clamp(wx,0,N-1), clamp(wy,0,N-1))] === G.BRIDGE) {
