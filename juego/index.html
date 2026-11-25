@@ -3943,7 +3943,7 @@ function drawBoar(base, moving, now, charging, stunned, flip) {
 const pcv = document.createElement('canvas'), pctx = pcv.getContext('2d');
 function crispPerson(o, you, tint) {
   const s = cv.width / CW, c = iso(o.fx + .5, o.fy + .5), BW = 96, BH = 104, ox = c[0] - BW/2, oy = c[1] - BH + 18;
-  const pw = Math.ceil(BW*s), ph = Math.ceil(BH*s); if (pcv.width !== pw || pcv.height !== ph) { pcv.width = pw; pcv.height = ph; } else pctx.clearRect(0, 0, pw, ph);
+  const pw = Math.ceil(BW*s), ph = Math.ceil(BH*s); if (pcv.width !== pw || pcv.height !== ph) { pcv.width = pw; pcv.height = ph; } else { pctx.setTransform(1, 0, 0, 1, 0, 0); pctx.globalAlpha = 1; pctx.globalCompositeOperation = 'source-over'; pctx.clearRect(0, 0, pw, ph); }   // limpiar sin transformación: antes quedaban restos (el arco a los dos lados)
   pctx.setTransform(s, 0, 0, s, -ox*s, -oy*s);
   const prev = ctx, keep = overlays.length, rq = Q.refl; ctx = pctx; Q.refl = false;
   try { inked(() => drawPerson(o, o.fx, o.fy, you)); } finally { ctx = prev; Q.refl = rq; overlays.length = keep; }
