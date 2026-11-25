@@ -51,6 +51,14 @@
   .clock{position:absolute;left:8px;top:36px;background:rgba(13,17,24,.6);padding:2px 8px;border-radius:7px;font-size:11px;color:var(--mut)}
   .mini{position:absolute;left:8px;bottom:8px;width:92px;height:92px;border-radius:50%;border:1px solid var(--line);background:#000;display:none;image-rendering:pixelated}
   .mini.show{display:block;cursor:pointer}
+  .dragghost{position:fixed;z-index:999;pointer-events:none;width:46px;height:46px;transform:translate(-50%,-60%);filter:drop-shadow(0 4px 4px rgba(0,0,0,.5));transition:opacity .1s}
+  .dragghost img{width:100%;height:100%}
+  .dragghost b{position:absolute;right:-4px;bottom:-2px;font:700 12px system-ui;color:#fff;text-shadow:0 0 3px #000}
+  body.invdrag #invPanel{opacity:.35;transition:opacity .15s}
+  .iic{-webkit-user-drag:none;user-select:none}
+  .dragghost i{display:none;position:absolute;left:50%;top:100%;transform:translateX(-50%);white-space:nowrap;font:700 11px system-ui;color:#ffe9a8;text-shadow:0 0 3px #000,0 0 3px #000}
+  .dragghost.out i{display:block}
+  .dragghost.out{transform:translate(-50%,-60%) scale(1.15);filter:drop-shadow(0 0 8px rgba(255,220,120,.9))}
   #mapPanel{display:none;flex-direction:column;align-items:center}
   #mapPanel.show{display:flex}
   #bigmap{width:100%;max-width:900px;height:auto;border-radius:10px;border:3px solid #6b4a2a;box-shadow:0 0 0 2px #15110e;background:#0b1220;touch-action:none}
@@ -344,13 +352,15 @@
       <h4>⏳ Turnos</h4><p>Cada 2 segundos empieza un turno para todos a la vez. Con el arma envainada corres hasta 3 pasos por turno; desenvainada das 1 paso o 1 acción. Si no haces nada, el turno se pierde.</p>
       <h4>💪 Atributos</h4><p>Empiezas flojo en todo. Fuerza (armas, talar, picar, cavar), Tiro con arco (disparar) y Puños (pelear a puñetazos) suben practicando y solo mejoran tu tasa de acierto. El daño y la defensa los da el equipo. El campo de práctica de Brannoc enseña, pero muy despacio.</p>
       <h4>⚔️ Combate</h4><p>Pulsa ⚔️ Desenvainar (tardas un turno en sacar el arma) y toca al enemigo. Con 🛡️ Envainar guardas el arma y el escudo a la espalda para correr. Los enemigos te persiguen corriendo 2 casillas por turno y también fallan. El escudo para golpes. La armadura de cuero quita 1 de daño, la de hierro 2, la de hielo 3 y la de fuego 4.</p>
+      <h4>🌪️ El Guardián de los Espíritus</h4><p>En la Isla de los Espíritus, al norte, espera Aldric, el tarotista, junto a su altar de cristal. Para llegar, habla con Marlo, el barquero del embarcadero de la aldea: la ida cuesta 🪙 5 y la vuelta es gratis. Si aceptas su desafío, el duelo es 1 contra 1 y nadie más puede meterse. Esquiva según tu arma y cómo vaya el combate; a media vida se vuelve invisible hasta que ataca; si te alejas, lanza un remolino que te arrastra hasta él, y si vuelves a alejarte pronto, embiste y te deja a un golpe. No te mata: cuando te deja a un golpe, el duelo acaba. Si le vences, llevarás sobre tu nombre el título de Guardián de los Espíritus y podrás invocar su remolino cada 10 turnos para atraer a los enemigos.</p>
+      <h4>🎒 Botín y objetos</h4><p>Lo que sueltan los enemigos y animales queda flotando en el suelo donde caen: pasa por encima para cogerlo. Para tirar algo, arrástralo fuera de las casillas de la mochila y caerá delante de ti.</p>
       <h4>🗺️ Por dónde empezar</h4><p>Empieza por el 🌲 bosque, el sitio más amable para los nuevos. Después ve a la ❄️ nieve: allí están el hierro y unas pocas menas de 🧊 hielo encantado. Con él, Durgan te forja la armadura y las armas de hielo. La armadura de hielo te deja estar en el 🌋 volcán sin quemarte y picar su mineral de fuego, y los elementales de fuego no te hacen nada. Para cazar animales (carne y cuero) necesitas el 🏹 arco, que siempre llevas a la espalda; equípatelo desde la mochila o con el botón ARMA. Las armas de hielo hacen el doble de daño a los slimes y elementales de fuego; las demás armas, la mitad. Con el mineral de fuego te haces el equipo de fuego, el mejor del juego, pensado para los 10 pisos de la 🏜️ pirámide.</p>
       <h4>🍗 Hambre y salud</h4><p>La comida baja con el tiempo. Si llega a 0 tienes 35 turnos para comer o mueres. Si te atiborras, vomitas. Con buena comida recuperas vida poco a poco, y mucho más rápido en una habitación alquilada en la taberna. La curandera vende vendas y ungüentos y te cura por unas monedas. Las vendas cortan las hemorragias. En la nieve, sin armadura de cuero o una hoguera cerca, te congelas.</p>
       <h4>🪙 Economía</h4><p>El oro solo sale de cofres, cadáveres enterrados (necesitas pala) y bolsas de jugadores caídos. El mercader compra materiales y vende herramientas, ropa y pan. El artesano fabrica armas y armaduras con oro y materiales. Todo se gasta con el uso.</p>
       <h4>💀 Muerte</h4><p>Es definitiva: dejas una bolsa con todo donde caíste y empiezas un personaje nuevo, desnudo, en la posada.</p>
     </div></div>
     <div class="panel" id="shopPanel"><button class="x" data-close>✕</button><h3 id="shopTitle">💰 MERCADER</h3><div id="shopBody"></div></div>
-    <div class="dialog" id="dialog"><b id="dlgName">Thoren</b><p id="dlgText"></p><button id="dlgNext">Continuar ▸</button></div>
+    <div class="dialog" id="dialog"><b id="dlgName">Thoren</b><p id="dlgText"></p><button id="dlgNext">Continuar ▸</button><span id="dlgChoice" style="display:none;gap:8px;justify-content:flex-end"><button id="dlgYes">⚔️ Sí, acepto</button><button id="dlgNo">No</button></span></div>
   </div>
   <div class="hud">
   <div class="cd" id="cd">¡Tu turno!</div>
@@ -452,6 +462,8 @@ const OB = new Int32Array(N*N).fill(-1);    // objeto estático que ocupa la cas
 const NOPLANT = new Uint8Array(N*N);        // aquí no crecen plantas (caminos, aldeas, ruinas…)
 const objs = [];
 const inSafe = (x, y) => Math.hypot(x + .5 - VC.x, y + .5 - VC.y) < VC.R;
+const ISLE = { x:56, y:8.5, R:6.2 };   // Isla de los Espíritus (solo se llega en barca)
+const onIsle = (x, y) => Math.hypot(x + .5 - ISLE.x, y + .5 - ISLE.y) < ISLE.R + 1.5;
 
 (function genTerrain() {
   const ox = rnd()*200, oy = rnd()*200;
@@ -464,12 +476,13 @@ const inSafe = (x, y) => Math.hypot(x + .5 - VC.x, y + .5 - VC.y) < VC.R;
     }
     const d0 = Math.hypot(x+.5-VC.x, y+.5-VC.y);
     best = Math.max(best, Math.min(.5, (1 - d0/10.5)*1.6));
+    { const di = Math.hypot(x+.5-ISLE.x, y+.5-ISLE.y), an = Math.atan2(y+.5-ISLE.y, x+.5-ISLE.x), Ri = ISLE.R*(1 + .08*Math.sin(an*3 + 1) + .05*Math.sin(an*5)); best = Math.max(best, Math.min(.6, (1 - di/Ri)*1.4)); }
     let h = best + (vnoise(x, y, 6, 7) - .5)*.2;
     if (d0 < VC.R) h = Math.max(h, .3);
     HG[idx(x,y)] = h;
     let bi = 0, bd = 1e9;
     for (let k = 0; k < 4; k++) { const d = Math.hypot(x+.5-CEN[k].x, y+.5-CEN[k].y); if (d < bd) { bd = d; bi = k; } }
-    BIO[idx(x,y)] = d0 < 11 ? 2 : bi;
+    BIO[idx(x,y)] = d0 < 11 || Math.hypot(x+.5-ISLE.x, y+.5-ISLE.y) < ISLE.R + 3 ? 2 : bi;
   }
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
     const i = idx(x,y), h = HG[i], b = BIO[i];
@@ -516,6 +529,40 @@ for (const an of [-2.4, -1.7, -1.2, -.2, .6, 1.3, 1.9, 2.8]) {
   for (let y = Math.floor(py-3); y <= py+3; y++) for (let x = Math.floor(px-3); x <= px+3; x++)
     if (inside(x,y) && Math.hypot(x+.5-px, y+.5-py) < r && GR[idx(x,y)] === G.LAND && OB[idx(x,y)] < 0) GR[idx(x,y)] = G.LAVA;
 }
+
+// --- Isla de los Espíritus: altar, obeliscos de cristal, flores arcoíris y los dos embarcaderos ---
+const ISLE_C = { x:Math.floor(ISLE.x), y:Math.floor(ISLE.y) };
+for (let y = ISLE_C.y - 3; y <= ISLE_C.y + 3; y++) for (let x = ISLE_C.x - 3; x <= ISLE_C.x + 3; x++) if (inside(x, y)) { NOPLANT[idx(x, y)] = 1; if (GR[idx(x, y)] !== G.LAND) GR[idx(x, y)] = G.LAND; }
+const ALTAR = { x:ISLE_C.x, y:ISLE_C.y - 1 };
+addObj({ t:'altar', x:ALTAR.x, y:ALTAR.y }, [[ALTAR.x, ALTAR.y]]);
+for (const [dx, dy] of [[-2,-2],[2,-2],[-2,2],[2,2]]) addObj({ t:'obelisk', x:ISLE_C.x + dx, y:ISLE_C.y + dy - 1 }, [[ISLE_C.x + dx, ISLE_C.y + dy - 1]]);
+// embarcaderos: la orilla de tierra más cercana a la otra punta
+function shoreNear(tx, ty, pred) {
+  let best = null, bd = 1e9;
+  for (let y = 1; y < N - 1; y++) for (let x = 1; x < N - 1; x++) {
+    const i = idx(x, y); if (GR[i] !== G.LAND && GR[i] !== G.SAND) continue; if (!pred(x, y)) continue;
+    const w = [[0,-1],[1,0],[-1,0],[0,1]].find(([a, b]) => GR[idx(x + a, y + b)] === G.WATER || GR[idx(x + a, y + b)] === G.DEEP); if (!w) continue;
+    const d = Math.hypot(x - tx, y - ty); if (d < bd) { bd = d; best = { x, y, wx:x + w[0], wy:y + w[1] }; }
+  }
+  return best;
+}
+const DOCK_M = shoreNear(ISLE.x, ISLE.y, (x, y) => Math.hypot(x + .5 - VC.x, y + .5 - VC.y) < VC.R + 1.5);   // en la aldea
+const DOCK_I = shoreNear(VC.x, VC.y, (x, y) => onIsle(x, y));
+for (const [D, home] of [[DOCK_M, false], [DOCK_I, true]]) {
+  const o = addObj({ t:'ferry', x:D.x, y:D.y, isle:home, wx:D.wx, wy:D.wy }, [[D.x, D.y]]);
+  // dónde bajas de la barca: una casilla libre junto al barquero
+  D.land = [[0,1],[1,0],[-1,0],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]].map(([a, b]) => [D.x + a, D.y + b]).find(([x, y]) => (GR[idx(x, y)] === G.LAND || GR[idx(x, y)] === G.SAND || GR[idx(x, y)] === G.PATH) && OB[idx(x, y)] < 0) || [D.x, D.y + 1];
+  NOPLANT[idx(D.land[0], D.land[1])] = 1;
+}
+// flores que brillan en arcoíris
+const RAINBOW = [];
+for (let t = 0; t < 400 && RAINBOW.length < 22; t++) {
+  const a = hash(t, 1, 777)*6.283, r = 1.5 + hash(t, 2, 777)*(ISLE.R - 1.8), x = Math.floor(ISLE.x + Math.cos(a)*r), y = Math.floor(ISLE.y + Math.sin(a)*r);
+  if (!inside(x, y) || GR[idx(x, y)] !== G.LAND || OB[idx(x, y)] >= 0) continue;
+  if (RAINBOW.some(f => f.x === x && f.y === y)) continue;
+  RAINBOW.push({ x, y, ox:hash(t, 3, 777)*.6 - .3, oy:hash(t, 4, 777)*.6 - .3, h:hash(t, 5, 777)*360 });
+}
+for (const f of RAINBOW) NOPLANT[idx(f.x, f.y)] = 1;
 
 // --- utilidades de colocación ---
 const isLand = (x, y) => inside(x,y) && (GR[idx(x,y)] === G.LAND || GR[idx(x,y)] === G.SAND);
@@ -812,6 +859,7 @@ const NPCDEF = {
   goat:{name:'Cabra',hp:5,animal:true}, camel:{name:'Camello',hp:8,animal:true}, lizard:{name:'Lagarto',hp:2,animal:true},
   salamander:{name:'Salamandra',hp:3,animal:true},
   slime:    { name:'Slime de fuego', hp:9, dmg:[2,3], reach:1, sight:6, foe:'slime', w:'none', acc:.68, slow:true, respawn:220 },
+  sage:     { name:'Aldric, Guardián de los Espíritus', hp:135, dmg:[3,5], reach:1, sight:14, foe:'sage', w:'staff', acc:.78, sage:true, respawn:300 },
   fuego:    { name:'Elemental de fuego', hp:10, dmg:[3,4], reach:1, sight:8, foe:'elem', w:'none', acc:.78, elem:true, respawn:200 },
   boar:     { name:'Jabalí', hp:11, dmg:[3,5], reach:1, sight:7, foe:'boar', w:'none', acc:.7, charge:true, respawn:260 },
   // criaturas de la pirámide
@@ -840,6 +888,9 @@ for (const [k, b, n] of ANIMALS) for (let j = 0; j < n; j++) {
   npcs.push({ id:npcs.length, k, x, y, hx:x, hy:y, hp:NPCDEF[k].hp, st:0, tg:'', dead:-1 });
 }
 for (let j = 0; j < 4; j++) { const I = CEN[1], [x, y] = npcSpot(I.x, I.y, 15); if (BIO[idx(x, y)] === 1) npcs.push({ id:npcs.length, k:'slime', x, y, hx:x, hy:y, hp:NPCDEF.slime.hp, st:0, tg:'', dead:-1 }); }
+// el Guardián de los Espíritus espera junto al altar de obsidiana
+{ const hx = ALTAR.x, hy = ALTAR.y + 2, j = idx(hx, hy); if (OB[j] >= 0 && objs[OB[j]].t !== 'landmark') OB[j] = -1;
+  npcs.push({ id:npcs.length, k:'sage', a:'w', x:hx, y:hy, hx, hy, fx:hx, fy:hy, hp:NPCDEF.sage.hp, mhp:NPCDEF.sage.hp, st:0, tg:'', dead:-1, duel:'' }); }
 for (let j = 0, t = 0; j < 5 && t < 60; t++) { const I = CEN[1], [x, y] = npcSpot(I.x, I.y, 16); if (BIO[idx(x, y)] === 1) { npcs.push({ id:npcs.length, k:'fuego', x, y, hx:x, hy:y, hp:NPCDEF.fuego.hp, st:0, tg:'', dead:-1 }); j++; } }
 for (let j = 0; j < 4; j++) { const I = CEN[2], [x, y] = npcSpot(I.x, I.y, 18); npcs.push({ id:npcs.length, k:'boar', x, y, hx:x, hy:y, hp:NPCDEF.boar.hp, st:0, tg:'', dead:j < 2 ? -1 : 0 }); }
 npcs.forEach(n => { n.a = 'w'; n.fx = n.x; n.fy = n.y; });
@@ -918,7 +969,8 @@ for (let k = 0; k < 4; k++) for (const x of [DUN_E.x - 1, DUN_E.x]) { const y = 
 const pois = [
   ...LM.map(L => ({ x:Math.floor(L.x), y:Math.floor(L.y), r:L.r + 3, name:L.name, icon:L.icon })),
   ...villages.map(v => ({ x:v.x, y:v.y, r:5, name:v.name, icon:v.icon })),
-  ...ruins.map(r => ({ x:r.x, y:r.y, r:3, name:r.name, icon:r.icon }))];
+  ...ruins.map(r => ({ x:r.x, y:r.y, r:3, name:r.name, icon:r.icon })),
+  { x:ISLE_C.x, y:ISLE_C.y, r:4, name:'Isla de los Espíritus', icon:'🏝️' }];
 pois.forEach((p, i) => p.id = i);
 el('total').textContent = pois.length;
 
@@ -1021,6 +1073,7 @@ function loadProfile(p) {
   me.weapon = WPN[p.w] && (p.w === 'fist' || me.inv[p.w]) ? p.w : 'fist';
   me.food = clamp(Number(p.food) || 80, 0, 100); me.bleed = !!p.bleed; me.gifted = !!p.gifted; me.reborn = !!p.reborn; me.gotStick = !!p.gotStick; me.armorOff = !!p.armorOff; me.roomUntil = Math.floor(Number(p.roomUntil) || 0);
   const A = p.att && typeof p.att === 'object' ? p.att : {}; me.att = {}; for (const k of ['fue','res','arc','pun']) me.att[k] = clamp(Number(A[k]) || (k === 'arc' && p.bow ? 5 + Number(p.bow)*.3 : 5), 5, 100);
+  me.title = p.title === SAGE_TITLE ? SAGE_TITLE : '';
   me.belt = [0,1,2].map(i => { const k = Array.isArray(p.belt) ? p.belt[i] : null; return typeof k === 'string' && ITEMS[k] && BELTOK(k) ? k : null; });
   const a = p.a, x = Number(p.x), y = Number(p.y);
   if (a === 'w' && inside(x,y) && BASEWALK(idx(x,y))) { me.a = 'w'; me.x = x; me.y = y; }
@@ -1075,7 +1128,7 @@ function save() {
   let s = ''; for (let i = 0; i < N*N; i++) s += explored[i] ? '1' : '0';
   store.set('exp', s); store.set('found', JSON.stringify([...found]));
   store.set('name', me.name); store.set('color', me.color); if (me.look) store.set('look', JSON.stringify(me.look));
-  const prof = { v:2, gold:me.gold, inv:me.inv, dur:me.dur, w:me.weapon, a:me.a, x:me.x, y:me.y, food:Math.round(me.food), bleed:me.bleed, gifted:me.gifted, gotStick:!!me.gotStick, armorOff:!!me.armorOff, belt:me.belt, att:me.att, roomUntil:me.roomUntil || 0, reborn:!!me.reborn, _pp:'Pixel Probe' };
+  const prof = { v:2, title:me.title || null, gold:me.gold, inv:me.inv, dur:me.dur, w:me.weapon, a:me.a, x:me.x, y:me.y, food:Math.round(me.food), bleed:me.bleed, gifted:me.gifted, gotStick:!!me.gotStick, armorOff:!!me.armorOff, belt:me.belt, att:me.att, roomUntil:me.roomUntil || 0, reborn:!!me.reborn, _pp:'Pixel Probe' };
   const js = JSON.stringify(prof);
   store.set('profile', js);
   if (js === lastProf) return;
@@ -1175,9 +1228,10 @@ const canAttack = () => me.mode === 'fight' && curTurn() >= me.drawTurn && !tire
 const ABIL = {
   eva:  { name:'Esquivar', icon:'💨', short:'ESQ' },
   rc:   { name:'Cristal de regreso', icon:'💎', short:'VOLV' },
+  rem:  { name:'Remolino de los espíritus', icon:'🌪️', short:'REM' },
   wpn:  { name:'Cambiar arma', icon:'🗡️', short:'ARMA' },
   fist: { name:'Puños', icon:'👊', short:'PUÑ' }, none:{ name:'Vacío', icon:'', short:'' } };
-const SLOT_OPTIONS = ['eva','rc','wpn','fist','none'];
+const SLOT_OPTIONS = ['eva','rc','rem','wpn','fist','none'];
 const range = (k, w) => { const heavy = WPN[w] && WPN[w].heavy ? 1 : 0; return k === 'eva' ? 2 - heavy : 0; };
 function passable(a, x, y, T) {
   if (a === 'w') return walkableWorld(x, y, T);
@@ -1279,12 +1333,12 @@ let room = null, myPeer = null, isHost = true, hostPeer = null;
 const others = new Map();
 let evN = 0; const evList = [];                  // eventos de ataque de NPC (solo el anfitrión)
 const evSeen = new Map();                        // último evento visto por anfitrión
-function npcPack() { const T = curTurn(); return npcs.map(n => [n.id, n.x, n.y, n.hp, n.st, n.dead >= 0 ? 1 : 0, n.tg ? 1 : 0, T < (n.stun || 0) ? 1 : 0, n.lgN || 0, n.lgD ? (n.lgD[0] + 1)*3 + n.lgD[1] + 1 : 4]); }
+function npcPack() { const T = curTurn(); return npcs.map(n => [n.id, n.x, n.y, n.hp, n.st, n.dead >= 0 ? 1 : 0, n.tg ? 1 : 0, T < (n.stun || 0) ? 1 : 0, n.lgN || 0, n.lgD ? (n.lgD[0] + 1)*3 + n.lgD[1] + 1 : 4, n.inv ? 1 : 0, n.duel || '']); }
 function publish() {
   if (!room) return;
   if (!started) return;
   const L = normLook(me.look);
-  const p = { lk:[L.s, L.h, L.hc, L.e, L.es], name:me.name, color:me.color, a:me.a, x:me.x, y:me.y, m:me.mode, hp:me.hp, t:me.turn, w:me.weapon, ab:me.ab, rc:me.rc || null, hit:me.hit, nh:me.nh, ac:me.ac || null, sky:skyOn ? 1 : 0, eq:eqPack(), vo:me.voN, yw:me.ywN };
+  const p = { lk:[L.s, L.h, L.hc, L.e, L.es], name:me.name, color:me.color, a:me.a, x:me.x, y:me.y, m:me.mode, hp:me.hp, t:me.turn, w:me.weapon, ab:me.ab, rc:me.rc || null, fe:me.fe || null, duel:me.duelReq || null, pull:me.pull || null, rem:me.rem || null, title:me.title || null, hit:me.hit, nh:me.nh, ac:me.ac || null, sky:skyOn ? 1 : 0, eq:eqPack(), vo:me.voN, yw:me.ywN };
   if (isHost) { p.H = 1; p.npc = npcPack(); p.ev = evList.slice(-6); }
   else { p.H = null; p.npc = null; p.ev = null; }
   room.presence(p).catch(() => {});
@@ -1328,7 +1382,7 @@ function ingest(peers) {
     const hp = clamp(Number(pr.hp) || 0, 0, MAXHP);
     let o = others.get(p.peer);
     if (!o) { o = { name, color, a, x, y, fx:x, fy:y, m, w, hp, tn:Number(pr.t) || 0, rcN:pr.rc && pr.rc.n, steps:0, hitN:pr.hit ? pr.hit.n : 0, hitTurn:-1, nhN:pr.nh ? pr.nh.n : 0, jumpT0:0 }; others.set(p.peer, o); }
-    o.name = name; o.color = color; o.m = m; o.w = w; o.hp = hp; o.peer = p.peer; o.pr = pr;
+    o.name = name; o.color = color; o.m = m; o.w = w; o.hp = hp; o.peer = p.peer; o.pr = pr; o.title = pr.title === SAGE_TITLE ? SAGE_TITLE : '';
     if (Array.isArray(pr.lk)) o.look = normLook({ s:pr.lk[0], h:pr.lk[1], hc:pr.lk[2], e:pr.lk[3], es:pr.lk[4] });
     o.sky = pr.sky === 1;
     o.eq = Array.isArray(pr.eq) ? pr.eq.slice(0, 12).map(v => Number(v) || 0) : [];
@@ -1342,11 +1396,16 @@ function ingest(peers) {
       const pt = Number(pr.t), ab = pr.ab && typeof pr.ab === 'object' && pr.ab.k === 'eva' ? pr.ab : null;
       const rc = pr.rc && typeof pr.rc === 'object' && Number.isInteger(pr.rc.n) && pr.rc.n !== o.rcN ? pr.rc : null;
       if (rc) o.rcN = rc.n;
+      const pl = pr.pull && Number.isInteger(pr.pull.n) && pr.pull.n !== o.pullN; if (pr.pull) o.pullN = pr.pull.n;
+      const fe = pr.fe && Number.isInteger(pr.fe.n) && pr.fe.n !== o.feN; if (pr.fe) o.feN = pr.fe.n;
+      const ferry = fe && a === 'w' && [DOCK_M, DOCK_I].some(D => D.land[0] === x && D.land[1] === y);
       const home = houses[0].ap, recall = rc && a === 'w' && Math.abs(x - home.x) + Math.abs(y - home.y) <= 2 && passable('w', x, y);
       const turnOk = Number.isInteger(pt) && Math.abs(pt - curTurn()) <= 1 && pt >= o.tn;
       const special = ab && Number(ab.t) === pt && m === 'fight' && a === o.a && abilityOk(a, o.x, o.y, ab.k, x, y, w, false);
       const cost = special ? 99 : legal(o, a, x, y);
-      if (recall && turnOk) { if (o.a === me.a) fx(o.x, o.y, '💎', '#9fe8ff'); o.a = a; o.x = x; o.y = y; o.fx = x; o.fy = y; o.tn = pt; o.steps = 99; if (me.a === 'w') fx(x, y, '💎', '#9fe8ff'); }
+      if (ferry) { o.a = a; o.x = x; o.y = y; o.fx = x; o.fy = y; o.tn = pt; o.steps = 99; }
+      else if (pl && a === o.a && npcs.some(q => NPCDEF[q.k].sage && q.a === a && Math.abs(q.x - x) + Math.abs(q.y - y) <= 2)) { o.x = x; o.y = y; o.tn = pt; o.steps = 99; }
+      else if (recall && turnOk) { if (o.a === me.a) fx(o.x, o.y, '💎', '#9fe8ff'); o.a = a; o.x = x; o.y = y; o.fx = x; o.fy = y; o.tn = pt; o.steps = 99; if (me.a === 'w') fx(x, y, '💎', '#9fe8ff'); }
       else if (cost && turnOk) {
         if (pt !== o.tn) { o.tn = pt; o.steps = 0; }
         if (special ? o.steps === 0 : o.steps + cost <= allowed(m)) {
@@ -1386,7 +1445,7 @@ function ingest(peers) {
         if (Math.abs(nx - n.x) + Math.abs(ny - n.y) > 3) { n.fx = nx; n.fy = ny; }
         n.x = nx; n.y = ny;
         if (Number(r[3]) < n.hp) { fx(n.x, n.y, '-' + (n.hp - Number(r[3])), '#ffd166'); bloodSpray(n.x, n.y, Number(r[3]) <= 0 ? 30 : 10, 'w'); }
-        n.hp = Number(r[3]); n.st = Number(r[4]); n.dead = r[5] ? 1 : -1; n.tg = r[6] ? 'x' : ''; n.tz = r[7] ? 1 : 0;
+        n.hp = Number(r[3]); n.st = Number(r[4]); n.dead = r[5] ? 1 : -1; n.tg = r[6] ? 'x' : ''; n.tz = r[7] ? 1 : 0; n.inv = r[10] ? 1 : 0; n.duel = typeof r[11] === 'string' ? r[11].slice(0, 40) : '';
         if (Number.isInteger(r[8]) && r[8] !== (n.lgN || 0)) { n.lgN = r[8]; const dc = clamp(Number(r[9]) || 4, 0, 8); n.lgD = [((dc / 3) | 0) - 1, (dc % 3) - 1]; n.lgT0 = performance.now(); if (n.a === me.a) sfx('swish', .7); }
       }
     }
@@ -1395,11 +1454,13 @@ function ingest(peers) {
   if (isHost) {
     // el anfitrión aplica los golpes que los jugadores dan a los NPC
     for (const [k, o] of others) {
+      const dq = o.pr && o.pr.duel; if (dq && Number.isInteger(dq.n) && dq.n !== o.duelN) { o.duelN = dq.n; const sn = npcs[dq.id]; if (sn && Math.abs(sn.x - o.x) + Math.abs(sn.y - o.y) <= 3) startDuel(sn, k); }
+      const rq = o.pr && o.pr.rem; if (rq && Number.isInteger(rq.n) && rq.n !== o.remN) { if (o.remN !== undefined && o.title === SAGE_TITLE) applyRem(o.a, o.x, o.y); o.remN = rq.n; }
       const nh = o.pr && o.pr.nh;
       if (nh && Number.isInteger(nh.n) && nh.n !== o.nhN) {
         o.nhN = nh.n;
         const n = npcs[nh.id];
-        if (n && n.dead < 0 && o.a === 'w' && Math.abs(n.x - o.x) + Math.abs(n.y - o.y) <= WPN[o.w].r && o.m === 'fight')
+        if (n && n.dead < 0 && o.a === 'w' && Math.abs(n.x - o.x) + Math.abs(n.y - o.y) <= WPN[o.w].r && o.m === 'fight' && (!NPCDEF[n.k].sage || n.duel === k))
           damageNpc(n, clamp(Math.floor(Number(nh.d) || 1), 1, DMG[o.w][1] * (o.w === 'fist' ? 2 : 1) * (FIRE_FOE(n.k) && WPN[o.w] && WPN[o.w].ice ? 2 : 1)), k);
       }
     }
@@ -1413,7 +1474,27 @@ function handleEvents(src, list) {
     if (!e || !Number.isInteger(e.n) || e.n <= last) continue;
     mx = Math.max(mx, e.n);
     const n = npcs[e.k]; if (!n) continue;
-    if (e.kind === 'loot') { if (e.to === myPeer) npcLoot(n.k); continue; }
+    if (e.kind === 'loot') { if (e.to === myPeer) npcLoot(n.k, n.x, n.y); continue; }
+    const mine = e.to === myPeer || (e.to === 'host' && isHost);
+    if (e.kind === 'duel') {
+      if (!mine) { if (e.r === 'start' && n.a === me.a) effects.push({ x:n.x, y:n.y, text:'¡DUELO!', color:'#ffd166', t0:performance.now(), a:n.a, big:true }); continue; }
+      if (e.r === 'start') { me.duelReq = null; effects.push({ x:n.x, y:n.y, text:'¡EN GUARDIA!', color:'#ffd166', t0:performance.now(), a:n.a, big:true }); sfx('clang'); toast('⚔️ Aldric acepta el duelo. Nadie más puede entrar en él'); }
+      else if (e.r === 'lose') duelLost();
+      else if (e.r === 'quit') toast('🏳️ Te has alejado: Aldric da el duelo por terminado');
+      continue;
+    }
+    if (e.kind === 'whirl') {
+      n.atkT0 = performance.now(); if (n.a === me.a) { whirls.push({ x:n.x, y:n.y, a:n.a, t0:performance.now(), R:9, inward:true }); sfx('swish', 1); }
+      if (mine && me.a === n.a && e.x >= 0) { me.x = e.x; me.y = e.y; me.wp = []; me.pullT = performance.now(); me.pullN = (me.pullN || 0) + 1; me.pull = { n:me.pullN }; reveal(); sageHurt(2, '🌪️ El remolino de Aldric te arrastra hasta él'); }
+      else if (mine) toast('🌪️ El remolino no te alcanza… por poco');
+      continue;
+    }
+    if (e.kind === 'oneshot') {
+      n.atkT0 = performance.now(); if (n.a === me.a) { shake(10); sfx('die', .7); }
+      if (mine) { effects.push({ x:me.x, y:me.y, text:'¡A UN GOLPE!', color:'#ff5a3c', t0:performance.now(), a:me.a, big:true }); me.hp = 1; bloodSpray(me.x, me.y, 40); hurtFlash = performance.now(); updateStats(); publish(); duelLost(); }
+      continue;
+    }
+    if (e.sage) { n.atkT0 = performance.now(); if (mine) sageHurt(Number(e.d) || 4, '🪄 Aldric te golpea con el bastón'); else { const t = others.get(e.to); if (t) fx(t.x, t.y, '💥', '#fff'); } continue; }
     n.atkT0 = performance.now();
     if (n.a === me.a) { if (NPCDEF[n.k].ranged) sfx('bow', .7); else if (Math.abs(n.x - me.x) + Math.abs(n.y - me.y) < 10) sfx('slash', .6); }
     if (e.to === myPeer || (e.to === 'host' && isHost)) {
@@ -1422,6 +1503,164 @@ function handleEvents(src, list) {
     } else { const t = others.get(e.to); if (t) { fx(t.x, t.y, NPCDEF[n.k].ranged ? '🏹' : '💥', '#fff'); bloodSpray(t.x, t.y, 10, t.a); } }
   }
   evSeen.set(src, mx);
+}
+
+// =====================================================================
+//  EL GUARDIÁN DE LOS ESPÍRITUS: duelo 1 contra 1
+// =====================================================================
+const myKey = () => myPeer || 'host';
+const SAGE_TITLE = 'Guardián de los Espíritus';
+const whirls = [];   // remolinos de viento (efecto visual)
+function emitEv(ev) { evN++; ev.n = evN; evList.push(ev); if (evList.length > 10) evList.shift(); handleEvents('self', [ev]); }
+function startDuel(n, key) {
+  if (!n || n.k !== 'sage' || n.dead >= 0 || n.duel) return false;
+  n.duel = key; n.duelT = curTurn(); n.hp = n.mhp || NPCDEF.sage.hp; n.st = 0; n.inv = 0; n.healed = 0; n.lastFar = -99;
+  emitEv({ kind:'duel', r:'start', to:key, k:n.id }); publish(); return true;
+}
+function endDuel(n, r) { const key = n.duel; n.duel = ''; n.st = 0; n.inv = 0; if (key) emitEv({ kind:'duel', r, to:key, k:n.id }); publish(); }
+function targetHp(key) { if (key === myKey()) return me.hp; const o = others.get(key); return o ? o.hp : 0; }
+function sageTick(n, T, allT) {
+  const D = NPCDEF.sage, MH = n.mhp || D.hp, DM = D.dmg;
+  if (!n.duel) {   // en paz: vuelve a su sitio junto al altar y recupera fuerzas
+    n.inv = 0; n.st = 0; if (n.hp < MH) n.hp = Math.min(MH, n.hp + 5);
+    if (n.x !== n.hx || n.y !== n.hy) stepToward(n, n.hx, n.hy, T);
+    return;
+  }
+  const t = allT.find(u => u.key === n.duel);
+  if (!t || t.a !== n.a || Math.abs(t.x - n.x) + Math.abs(t.y - n.y) > 24 || T - n.duelT > 500) return endDuel(n, 'quit');
+  if (targetHp(n.duel) <= 1) { n.hp = MH; return endDuel(n, 'lose'); }
+  const dist = Math.abs(t.x - n.x) + Math.abs(t.y - n.y), half = n.hp < MH/2;
+  // ataques preparados el turno anterior
+  if (n.st === 1) {   // golpe de bastón
+    n.st = 0; n.inv = 0;
+    if (dist === 1 && Math.random() < D.acc) emitEv({ to:n.duel, d:DM[0] + Math.floor(Math.random()*(DM[1] - DM[0] + 1)), k:n.id, sage:1 });
+    else { fx(t.x, t.y, '💨', '#fff'); effects.push({ x:t.x, y:t.y, text:'¡FALLA!', color:'#cfe8ff', t0:performance.now(), a:n.a }); }
+    return;
+  }
+  if (n.st === 3) {   // remolino de viento: te arrastra hasta él
+    n.st = 0; n.inv = 0;
+    let dest = null;
+    if (Math.max(Math.abs(t.x - n.x), Math.abs(t.y - n.y)) <= 9) {
+      const c = [[Math.sign(t.x - n.x), 0], [0, Math.sign(t.y - n.y)], [1,0], [-1,0], [0,1], [0,-1]].filter(([a, b]) => a || b);
+      for (const [a, b] of c) { const x = n.x + a, y = n.y + b; if (passable(n.a, x, y) && !npcAt(n.a, x, y)) { dest = [x, y]; break; } }
+    }
+    emitEv({ kind:'whirl', to:n.duel, k:n.id, x:dest ? dest[0] : -1, y:dest ? dest[1] : -1, d:2 });
+    return;
+  }
+  if (n.st === 2) {   // embestida: si te alcanza te deja a un golpe
+    n.st = 0; n.inv = 0; const [cx, cy] = n.cdT || [t.x, t.y]; let hit = false;
+    for (let k = 0; k < 10; k++) {
+      if (Math.abs(t.x - n.x) + Math.abs(t.y - n.y) <= 1) { hit = true; break; }
+      const ex = cx - n.x, ey = cy - n.y; if (!ex && !ey) break;
+      const opts = Math.abs(ex) >= Math.abs(ey) ? [[Math.sign(ex), 0], [0, Math.sign(ey)]] : [[0, Math.sign(ey)], [Math.sign(ex), 0]];
+      const st = opts.find(([a, b]) => (a || b) && npcFree(n.x + a, n.y + b, T, n) && !(n.x + a === t.x && n.y + b === t.y)); if (!st) break;
+      n.x += st[0]; n.y += st[1];
+    }
+    if (hit || Math.abs(t.x - n.x) + Math.abs(t.y - n.y) <= 1) emitEv({ kind:'oneshot', to:n.duel, k:n.id });
+    else { n.stun = T + 2; effects.push({ x:n.x, y:n.y, text:'¡FALLA LA CARGA!', color:'#cfe8ff', t0:performance.now(), a:n.a, big:true }); }
+    return;
+  }
+  if (T < (n.stun || 0)) return;
+  // a media vida: se cura una vez y aprende a volverse invisible
+  if (n.hp < MH*.3 && !n.healed) { n.healed = 1; n.hp = Math.min(MH, n.hp + 20); effects.push({ x:n.x, y:n.y, text:'¡LOS ESPÍRITUS LE CURAN!', color:'#9fe8ff', t0:performance.now(), a:n.a, big:true }); return; }
+  if (half && !n.inv && Math.random() < .3) { n.inv = 1; effects.push({ x:n.x, y:n.y, text:'¡SE DESVANECE!', color:'#c7d8ff', t0:performance.now(), a:n.a, big:true }); }
+  if (dist >= 4) {   // te alejas: remolino; si vuelves a alejarte pronto, embestida
+    if (T - (n.lastFar || -99) <= 15) { n.st = 2; n.cdT = [t.x, t.y]; effects.push({ x:n.x, y:n.y, text:'¡CARGA!', color:'#ff7a5a', t0:performance.now(), a:n.a, big:true }); }
+    else { n.st = 3; effects.push({ x:n.x, y:n.y, text:'¡REMOLINO!', color:'#bfefff', t0:performance.now(), a:n.a, big:true }); }
+    n.lastFar = T; n.inv = 0; return;
+  }
+  if (dist === 1) { n.st = 1; return; }
+  npcRun(n, t.x, t.y, T, false, 1);
+}
+// tu propio remolino (título de Guardián): atrae a los enemigos cercanos hacia ti
+function applyRem(a, x, y) {
+  const T = curTurn();
+  for (const n of npcs) {
+    if (n.a !== a || n.dead >= 0 || NPCDEF[n.k].sage || NPCDEF[n.k].boss) continue;
+    if (Math.max(Math.abs(n.x - x), Math.abs(n.y - y)) > 7 || Math.abs(n.x - x) + Math.abs(n.y - y) <= 1) continue;
+    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]].sort((p, q) => (Math.abs(x + p[0] - n.x) + Math.abs(y + p[1] - n.y)) - (Math.abs(x + q[0] - n.x) + Math.abs(y + q[1] - n.y)))) {
+      const qx = x + dx, qy = y + dy; if (npcFree(qx, qy, T, n) && !(qx === me.x && qy === me.y && a === me.a)) { n.x = qx; n.y = qy; n.st = 0; break; }
+    }
+  }
+}
+function useRem() {
+  if (me.title !== SAGE_TITLE) return toast('🌪️ Solo quien vence al Guardián de los Espíritus puede invocar el remolino');
+  if (curTurn() - (me.remT || -99) < 10) return toast('🌪️ El viento aún no ha vuelto: faltan ' + (10 - (curTurn() - me.remT)) + ' turnos');
+  if (!spendAll()) return waitMsg();
+  me.remT = curTurn(); whirls.push({ x:me.x, y:me.y, a:me.a, t0:performance.now(), R:7, inward:true }); sfx('swish', 1);
+  if (isHost) applyRem(me.a, me.x, me.y); else { me.remN = (me.remN || 0) + 1; me.rem = { n:me.remN, a:me.a, x:me.x, y:me.y }; }
+  toast('🌪️ ¡Remolino de los espíritus! Los enemigos cercanos son arrastrados hacia ti'); publish(); renderQuick();
+}
+const FERRY_PRICE = 5;
+function ferryGo(toIsle) {
+  const D = toIsle ? DOCK_I : DOCK_M;
+  me.a = 'w'; me.x = D.land[0]; me.y = D.land[1]; me.fx = me.x; me.fy = me.y; me.wp = []; armed = null;
+  me.feN = (me.feN || 0) + 1; me.fe = { n:me.feN, i:toIsle ? 1 : 0 };
+  areaFade = 1; sfx('splash', .8); setTimeout(() => sfx('splash', .5), 500);
+  toast(toIsle ? '⛵ La barca cruza el mar… Llegas a la Isla de los Espíritus' : '⛵ Vuelves a la aldea. El barquero no te cobra la vuelta');
+  reveal(); publish(); renderList(); save();
+}
+function talkFerry(o) {
+  if (dlg) return;
+  const who = 'Marlo, el barquero';
+  if (o.isle) return showChoice('¿Volvemos a la aldea? La vuelta es gratis, como siempre.', who, () => ferryGo(false), null);
+  if (!dressed()) return showDialog(['En mi barca no se sube nadie en cueros. Vístete y hablamos.'], null, who);
+  showChoice('Te llevo a la Isla de los Espíritus por 🪙 ' + FERRY_PRICE + '. Allí vive el Guardián, junto a su altar. La vuelta es gratis. ¿Subes?', who, () => {
+    if (me.gold < FERRY_PRICE) return showDialog(['Sin monedas no hay viaje, amigo. Son ' + FERRY_PRICE + '.'], null, who);
+    if (!spendAll()) return waitMsg();
+    me.gold -= FERRY_PRICE; updateStats(); ferryGo(true);
+  }, null);
+}
+function talkSage(n) {
+  if (dlg) return;
+  const who = 'Aldric, el Guardián';
+  if (n.duel && n.duel !== myKey()) return showDialog(['Ahora estoy midiendo mi espada con otro. Espera tu turno, nadie se mete en un duelo.'], null, who);
+  if (n.duel === myKey()) return;
+  if (me.title === SAGE_TITLE) return showDialog(['Tú ya llevas el título. Los espíritus te reconocen, Guardián.', 'Si alguna vez dudas de ti, vuelve. Pero hoy no lucharé contra quien ya me venció.'], null, who);
+  showChoice('Si quieres tener mi lugar, tendrás que vencerme. ¿Estás dispuesto a enfrentarte a mí por el título de Guardián de los Espíritus?', who,
+    () => {
+      if (isHost) { if (!startDuel(n, myKey())) toast('⚔️ Ahora mismo no puede aceptar el duelo'); }
+      else { me.duelN = (me.duelN || 0) + 1; me.duelReq = { n:me.duelN, id:n.id }; publish(); }
+      if (me.mode !== 'fight') setMode('fight');
+    },
+    () => showDialog(['Sabia decisión… o cobarde. El tiempo lo dirá.'], null, who));
+}
+function sageHurt(d, msg) {   // el Guardián nunca te mata: te deja a un golpe y el duelo termina
+  const ar = armorOf(); let f = d + 1 - (ar === 'avolc' ? 4 : ar === 'ahielo' ? 3 : ar === 'ahierro' ? 2 : ar ? 1 : 0); if (ar) wear(ar);
+  f = Math.max(1, f); f = Math.min(f, me.hp - 1);
+  if (f > 0) { me.hp -= f; shake(4 + f*2); sfx('chof'); sfx('hurt'); bloodSpray(me.x, me.y, 8 + f*4); hurtFlash = performance.now(); fx(me.x, me.y, '-' + f, '#ff6b7a'); toast(msg + ' (-' + f + ')'); }
+  if (me.hp <= 1) duelLost();
+  updateStats(); publish(); save();
+}
+function duelLost() {
+  if (me.duelLostT && performance.now() - me.duelLostT < 3000) return; me.duelLostT = performance.now();
+  me.hp = Math.max(1, me.hp); sfx('die', .5);
+  setTimeout(() => showDialog(['Basta. Te tengo a un solo golpe.', 'Aún no eres digno del título. Cura tus heridas y vuelve cuando estés preparado.'], null, 'Aldric, el Guardián'), 500);
+}
+function sageWon() {
+  me.title = SAGE_TITLE; save(); publish();
+  effects.push({ x:me.x, y:me.y, text:'¡GUARDIÁN DE LOS ESPÍRITUS!', color:'#c7a6ff', t0:performance.now() + 200, a:me.a, big:true }); sfx('coin'); coinBurst(6);
+  setTimeout(() => showDialog(['…Bien luchado. Mi tiempo ha terminado.', 'Desde hoy llevas el título de Guardián de los Espíritus. Que todos lo vean sobre tu nombre.',
+    'Y llévate esto: el viento de los espíritus. Cada 10 turnos podrás invocar un remolino que arrastra a tus enemigos hacia ti (🌪️ en la barra de acciones).'], null, 'Aldric, el Guardián'), 600);
+  if (!slots.includes('rem')) { const i = slots.indexOf('none'); if (i >= 0) slots[i] = 'rem'; else slots[4] = 'rem'; store.set('slots', JSON.stringify(slots)); }
+  renderQuick();
+}
+function showChoice(text, who, onYes, onNo) {
+  showDialog([text], null, who);
+  el('dlgNext').style.display = 'none'; el('dlgChoice').style.display = 'flex';
+  const done = f => { el('dlgChoice').style.display = 'none'; el('dlgNext').style.display = ''; dlg = null; el('dialog').classList.remove('show'); if (f) f(); };
+  el('dlgYes').onclick = () => done(onYes); el('dlgNo').onclick = () => done(onNo);
+}
+function drawWhirls(now) {
+  for (let i = whirls.length - 1; i >= 0; i--) {
+    const w = whirls[i], age = (now - w.t0)/900; if (age > 1 || w.a !== me.a) { whirls.splice(i, 1); continue; }
+    const c = iso(w.x + .5, w.y + .5), R = w.R*TW*.5*(w.inward ? 1 - age*.8 : .3 + age*.9);
+    ctx.save(); ctx.translate(c[0], c[1] - 10); ctx.scale(1, .5);
+    for (let k = 0; k < 4; k++) { const r = R*(.35 + k*.22), a0 = now/(w.inward ? -140 : 140) + k*1.6;
+      ctx.strokeStyle = 'rgba(' + (k % 2 ? '220,245,255' : '170,220,240') + ',' + (.7*(1 - age)) + ')'; ctx.lineWidth = 6 - k; ctx.beginPath(); ctx.arc(0, 0, r, a0, a0 + 2.2); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, r, a0 + 3.14, a0 + 5); ctx.stroke(); }
+    ctx.restore();
+    if (Math.random() < .5) dusts.push({ x:w.x + .5 + (Math.random() - .5)*w.R, y:w.y + .5 + (Math.random() - .5)*w.R, t0:now, dx:(Math.random() - .5)*2, c:'220,235,245' });
+  }
 }
 
 // --- simulación de NPC (solo el anfitrión, una vez por turno) ---
@@ -1474,9 +1713,9 @@ function npcRun(n, tx, ty, T, away, stopAt) {   // corre: hasta 2 casillas en el
   if (Math.abs(tx - n.x) + Math.abs(ty - n.y) > stopAt || away) stepToward(n, tx, ty, T, away);
 }
 function npcTick(T) {
-  const allT = targetsWorld(), boss = npcs.find(n => NPCDEF[n.k].boss);
+  const allT = targetsWorld(), boss = npcs.find(n => NPCDEF[n.k].boss), sg = npcs.find(n => NPCDEF[n.k].sage), dk = sg && sg.duel;
   for (const n of npcs) {
-    const D = NPCDEF[n.k], targets = allT.filter(t => t.a === n.a), MH = n.mhp || D.hp, DM = n.dmg || D.dmg;
+    const D = NPCDEF[n.k], targets = allT.filter(t => t.a === n.a && t.key !== dk), MH = n.mhp || D.hp, DM = n.dmg || D.dmg;   // nadie se mete en el duelo del Guardián
     if (n.a === 'w' && n.dead < 0 && !walkableWorld(n.x, n.y, T)) {   // le ha crecido un árbol encima: sale de ahí
       let moved = false;
       for (let r = 1; r <= 3 && !moved; r++) for (let dy = -r; dy <= r && !moved; dy++) for (let dx = -r; dx <= r && !moved; dx++)
@@ -1485,6 +1724,7 @@ function npcTick(T) {
       n.fx = n.x; n.fy = n.y; continue;
     }
     if (n.dead >= 0) { if (T - n.dead >= (D.boss ? 900 : n.ally && boss && boss.dead < 0 ? 40 : D.respawn ? D.respawn + (n.id % 5)*30 : NPC_RESPAWN)) { n.dead = -1; n.hp = MH; n.x = n.hx; n.y = n.hy; n.fx = n.x; n.fy = n.y; n.st = 0; n.rest = 0; n.ch = 0; } continue; }
+    if (D.sage) { sageTick(n, T, allT); continue; }
     if (nTired(n, T)) { n.st = 0; n.tg = ''; continue; }   // agotado: recupera el aliento
     if (D.animal) {
       const near = targets.find(t => Math.abs(t.x - n.x) + Math.abs(t.y - n.y) <= 2);
@@ -1577,7 +1817,8 @@ function damageNpc(n, d, by) {
   if (n.hp <= 0) {
     n.hp = 0; n.dead = curTurn(); n.st = 0; n.tg = ''; if (n.a === me.a) fx(n.x, n.y, '💀', '#fff');
     if (NPCDEF[n.k].boss) setTimeout(() => toast('👑 ¡Neferkhet, el Faraón Sin Rostro, ha caído! La sala del tesoro está abierta'), 300);
-    if (by === 'me') { toast('💀 ' + NPCDEF[n.k].name + (NPCDEF[n.k].animal ? ' cazado' : ' derrotado')); npcLoot(n.k); }
+    if (NPCDEF[n.k].sage) { n.duel = ''; n.inv = 0; if (n.a === me.a) effects.push({ x:n.x, y:n.y, text:'¡ALDRIC CAE!', color:'#c7a6ff', t0:performance.now(), a:n.a, big:true }); }
+    if (by === 'me') { toast('💀 ' + NPCDEF[n.k].name + (NPCDEF[n.k].animal ? ' cazado' : ' derrotado')); npcLoot(n.k, n.x, n.y); }
     else if (by) { evN++; evList.push({ n:evN, kind:'loot', to:by, k:n.id }); if (evList.length > 8) evList.shift(); }
   }
   else if (NPCDEF[n.k].animal) stepToward(n, n.x, n.y, curTurn(), true);
@@ -1608,7 +1849,7 @@ function die() {
   dropBag();
   const lost = me.gold;
   me.gold = 0; me.inv = {}; me.dur = {}; me.weapon = 'fist'; me.food = 80; me.bleed = false; me.gifted = false; me.gotStick = false; me.armorOff = false; me.roomUntil = 0; me.belt = [null,null,null]; me.att = { fue:5, res:5, arc:5, pun:5 }; me.chain = 0; me.restUntil = 0;
-  me.hp = MAXHP; me.a = SPAWN.a; me.x = SPAWN.x; me.y = SPAWN.y; me.fx = me.x; me.fy = me.y;
+  me.hp = MAXHP; me.a = SPAWN.a; me.x = SPAWN.x; me.y = SPAWN.y; me.fx = me.x; me.fy = me.y; me.title = '';
   armed = null; me.mode = 'fight'; setMode('run');
   deathFlash = performance.now();
   toast('💀 Has muerto. Lo pierdes todo' + (lost ? ' (🪙 ' + lost + ')' : '') + '. Tu bolsa quedó donde caíste.');
@@ -1740,6 +1981,7 @@ const eqPack = () => {
   return [have('camisa') ? 1 : 0, have('pantalones') ? 1 : 0, have('zapatos') ? 1 : 0, ({ avolc:3, ahierro:2, acuero:1, ahielo:4 })[armorOf()] || 0, hasShield() ? 1 : 0,
           belt, have('flechas') ? 1 : 0, have('arco') && !(me.weapon === 'arco' && me.mode === 'fight') ? 1 : 0, hip, bi.some(k => k && ITEMS[k].kind === 'food') ? 1 : 0, have('mochila') ? 1 : 0, have('panuelo') ? 1 : 0];
 };
+window.giveItem = (...a) => give(...a);
 function give(k, n, noDrop) {
   if (!n || !ITEMS[k]) return 0;
   const add = roomFor(k, n);
@@ -1747,9 +1989,11 @@ function give(k, n, noDrop) {
   if (add < n && !noDrop) { dropGround(k, n - add); setTimeout(() => toast('🎒 ¡Bolsa llena! ' + ITEMS[k].icon + ' ×' + (n - add) + ' se queda en el suelo'), 400); }
   return add;
 }
-function npcLoot(k) {
+function npcLoot(k, lx, ly) {
+  if (k === 'sage') return sageWon();
+  const give = (it, nn) => lx === undefined ? window.giveItem(it, nn) : dropLoot(it, nn, lx, ly);   // el botín cae al suelo donde muere
   const DL = { slime:[['carbon',.6,1],['pvolc',.2,1]], fuego:[['carbon',.8,1],['pvolc',.35,1]], esq:[['hierro',.3,1],['flechas',.5,2]], esq_arq:[['flechas',1,3]], momia:[['fibra',1,3],['venda',.3,1]], guardian:[['hierro',.7,2],['unguento',.25,1]], faraon:[['unguento',1,3],['hierro',1,5],['flechas',1,10]] }[k];
-  if (DL) { const out = []; for (const [it, pc, nn] of DL) if (Math.random() < pc) { give(it, nn); out.push(ITEMS[it].icon + ' ' + ITEMS[it].n.toLowerCase() + ' +' + nn); } if (out.length) setTimeout(() => toast('🎒 Botín: ' + out.join(' · ')), 700); renderInv(); save(); return; }
+  if (DL) { const out = []; for (const [it, pc, nn] of DL) if (Math.random() < pc) { give(it, nn); out.push(ITEMS[it].icon + ' ' + ITEMS[it].n.toLowerCase() + ' +' + nn); } if (out.length) setTimeout(() => toast((lx === undefined ? '🎒 Botín: ' : '💀 Suelta en el suelo: ') + out.join(' · ') + (lx === undefined ? '' : '. Pasa por encima para cogerlo')), 700); renderInv(); save(); return; }
   const L = { boar:[3,2], deer:[2,2], rabbit:[1, Math.random() < .6 ? 1 : 0], penguin:[1,0], goat:[1,1], camel:[2,2], lizard:[1,0], salamander:[1,0] }[k];
   const out = [];
   if (L) { give('carne', L[0]); out.push('🥩 +' + L[0]); if (L[1]) { give('cuero', L[1]); out.push('🟫 cuero +' + L[1]); } }
@@ -1758,7 +2002,7 @@ function npcLoot(k) {
     if (NPCDEF[k].foe === 'orc' && Math.random() < .35) { give('hierro', 1); out.push('⛓️ hierro +1'); }
     if (k === 'ban_bow') { give('flechas', 2); out.push('➶ flechas +2'); }
   }
-  if (out.length) setTimeout(() => toast('🎒 Botín: ' + out.join(' · ')), 700);
+  if (out.length) setTimeout(() => toast((lx === undefined ? '🎒 Botín: ' : '💀 Suelta en el suelo: ') + out.join(' · ') + (lx === undefined ? '' : '. Pasa por encima para cogerlo')), 700);
   renderInv(); save();
 }
 const hits = new Map();   // golpes acumulados a árboles/rocas/tumbas
@@ -1810,6 +2054,7 @@ function attack(t) {
   if (tired()) return tiredMsg();
   if (!canAttack()) return toast('🗡️ Aún te estás preparando para pelear');
   if (WPN[me.weapon].ranged && !have('flechas')) return toast('🏹 No te quedan flechas. Durgan, el artesano, las fabrica');
+  if (t.npc && NPCDEF[t.npc.k].sage && t.npc.duel !== myKey()) return talkSage(t.npc);
   if (t.npc && NPCDEF[t.npc.k].animal && !WPN[me.weapon].ranged) return toast(have('arco') ? '🏹 Los animales huyen antes de que te acerques: equípate el arco (desde la mochila o ⚔️ ARMA) para cazar' : '🏹 Para cazar animales necesitas un arco. Durgan, el artesano, lo fabrica');
   if (!spendAll()) return waitMsg();
   let d = rollDmg(); const fist = me.weapon === 'fist', ranged = WPN[me.weapon].ranged, sk = fist ? 'pun' : ranged ? 'arc' : 'fue';
@@ -1818,6 +2063,16 @@ function attack(t) {
   if (!ranged && Math.random() >= hitChance(sk)) { gainAttr(sk, .2*gf); sfx('swish'); missFx(t.x, t.y); if (!fist) wear(me.weapon); return toast('💨 Fallas el golpe'); }
   if (fist && Math.random() < fistCrit()) { d *= 2; effects.push({ x:t.x, y:t.y, text:'¡CRÍTICO!', color:'#ff7a3c', t0:performance.now() + 120, a:me.a, big:true }); }
   if (!ranged) gainAttr(sk, .5*gf);
+  if (t.npc && NPCDEF[t.npc.k].sage) {   // el Guardián esquiva según tu arma y cómo vaya el combate
+    const n = t.npc, half = n.hp < (n.mhp || NPCDEF.sage.hp)/2, W = WPN[me.weapon];
+    let ch = (half ? .22 : .3) + (W.heavy ? .1 : 0) + (ranged ? .15 : 0) - (fist || me.weapon === 'cuchillo' ? .08 : 0) + Math.min(.24, (me.sgCombo || 0)*.06);
+    if (Math.random() < ch) {
+      me.sgCombo = 0; effects.push({ x:t.x, y:t.y, text:'¡ESQUIVA!', color:'#c7d8ff', t0:performance.now(), a:me.a, big:true }); sfx('swish');
+      if (ranged) { me.inv.flechas--; if (me.inv.flechas <= 0) delete me.inv.flechas; renderInv(); }
+      if (!fist) wear(me.weapon); save(); return toast(ranged ? '🌬️ Aldric desvía la flecha con el viento' : '💨 Aldric esquiva tu golpe');
+    }
+    me.sgCombo = (me.sgCombo || 0) + 1;
+  }
   if (t.npc && FIRE_FOE(t.npc.k)) {   // criaturas de fuego: el hielo les hace el doble; lo demás, la mitad
     if (WPN[me.weapon].ice) { d *= 2; effects.push({ x:t.x, y:t.y, text:'¡HIELO!', color:'#9fe8ff', t0:performance.now() + 100, a:me.a, big:true }); { const sp = iso(t.x + .5, t.y + .5); sparkBurst(sp[0], sp[1] - 20, 10, 'rgba(200,245,255,A)'); } }
     else { d = Math.max(1, Math.floor(d/2)); if (!me.fireHint || curTurn() - me.fireHint > 30) { me.fireHint = curTurn(); setTimeout(() => toast('🔥 El fuego apenas nota tu golpe. Las armas de hielo le hacen el doble'), 500); } }
@@ -1964,7 +2219,7 @@ const BLOCK_MSG = {
   water:'🌊 No puedes cruzar el agua', lava:'🔥 ¡Lava! Mejor no', landmark:'⛰️ No se puede escalar',
   tipi:'⛺ Un tipi orco', adobe:'🏚️ Una casa de adobe de los bandidos', well:'🪣 El pozo de la aldea',
   dummy:'🎯 Campo de práctica: desenvaina para golpear el muñeco o dispararle con el arco', torch:'🔥 Una antorcha',
-  campfire:'🔥 Una hoguera', log:'🪵 Un tronco para sentarse', pillar:'🏛️ Una columna antigua', fountain:'⛲ La fuente de la aldea. El agua está fresquísima' };
+  campfire:'🔥 Una hoguera', log:'🪵 Un tronco para sentarse', pillar:'🏛️ Una columna antigua', altar:'🔮 El Altar de los Espíritus. Las cartas del destino flotan a su alrededor', obelisk:'💎 Un obelisco de cristal que cambia de color', fountain:'⛲ La fuente de la aldea. El agua está fresquísima' };
 
 function tryStep(dx, dy) {
   const nx = me.x + dx, ny = me.y + dy, T = curTurn();
@@ -1979,6 +2234,7 @@ function tryStep(dx, dy) {
       if (typeof b === 'object' && b.t === 'rock') return mine(b);
       if (typeof b === 'object' && b.t === 'vrock') return mineVolc(b);
       if (typeof b === 'object' && b.t === 'chest') return openChest(b);
+      if (typeof b === 'object' && b.t === 'ferry') return talkFerry(b);
       if (typeof b === 'object' && b.t === 'villager') return b.trainer ? talkTrainer() : talkTomas();
       if (typeof b === 'object' && b.t === 'landmark' && b.kind === 'pyramid' && dy === -1 && me.y === DUN_E.y && Math.abs(me.x - DUN_E.x + .5) <= 1) return enterDungeon();
       if (typeof b === 'object' && b.common) return openCook();
@@ -1989,7 +2245,7 @@ function tryStep(dx, dy) {
       }
       return toast(BLOCK_MSG[typeof b === 'string' ? b : b.t] || 'No puedes pasar');
     }
-    const n = npcAt('w', nx, ny); if (n) return toast(NPCDEF[n.k].animal ? '🐾 ' + NPCDEF[n.k].name : '⚠️ ' + NPCDEF[n.k].name + '. Desenvaina (⚔️) para luchar');
+    const n = npcAt('w', nx, ny); if (n && NPCDEF[n.k].sage) return talkSage(n); if (n) return toast(NPCDEF[n.k].animal ? '🐾 ' + NPCDEF[n.k].name : '⚠️ ' + NPCDEF[n.k].name + '. Desenvaina (⚔️) para luchar');
     if (playerAt('w', nx, ny)) return toast('Hay otro explorador ahí');
     if (!spend(1)) return waitMsg();
     moveTo(nx, ny);
@@ -1997,7 +2253,7 @@ function tryStep(dx, dy) {
     const f = +me.a.slice(1), c = dcell(f, nx, ny), F = DUN[f];
     if (F.chest && nx === F.chest.x && ny === F.chest.y) { if (f === DFL && npcs.some(n => n.k === 'faraon' && n.dead < 0)) return toast('👑 El Faraón protege su tesoro. Derrótalo primero'); return openChest(F.chestObj); }
     if (c === DG.WALL) return toast('🧱 Muros de piedra antigua');
-    const n = npcAt(me.a, nx, ny); if (n) return toast('⚠️ ' + NPCDEF[n.k].name + '. Desenvaina (⚔️) para luchar');
+    const n = npcAt(me.a, nx, ny); if (n && NPCDEF[n.k].sage) return talkSage(n); if (n) return toast('⚠️ ' + NPCDEF[n.k].name + '. Desenvaina (⚔️) para luchar');
     if (playerAt(me.a, nx, ny)) return toast('Hay otro explorador ahí');
     if (c === DG.UP || c === DG.DOWN) return useStairs(c);
     if (!spend(1)) return waitMsg();
@@ -2061,7 +2317,7 @@ function renderQuick() {
     b.classList.toggle('armed', armed === k);
     b.classList.toggle('equip', (k === 'wpn' && me.weapon !== 'fist') || (k === 'fist' && me.weapon === 'fist'));
     const owned = 1;
-    b.classList.toggle('dim', (k === 'eva' && me.mode !== 'fight') || (k === 'rc' && !have('cristal')) || !owned);
+    b.classList.toggle('dim', (k === 'eva' && me.mode !== 'fight') || (k === 'rc' && !have('cristal')) || (k === 'rem' && (me.title !== SAGE_TITLE || curTurn() - (me.remT || -99) < 10)) || !owned);
   });
 }
 function equip(w) {
@@ -2077,6 +2333,7 @@ function useSlot(i) {
   if (k === 'none') return;
   if (k === 'fist') return equip('fist');
   if (k === 'rc') return useCrystal();
+  if (k === 'rem') return useRem();
   if (k === 'wpn') { const own = ['fist', ...Object.keys(WPN).filter(w => w !== 'fist' && have(w))]; return equip(own[(own.indexOf(me.weapon) + 1) % own.length]); }
   if (me.mode !== 'fight') return toast(ABIL[k].icon + ' ' + ABIL[k].name + ': solo con el arma desenvainada');
   armed = armed === k ? null : k;
@@ -2139,6 +2396,8 @@ function usedWith(k, extra) { const was = me.inv[k] || 0; me.inv[k] = was + extr
 function roomFor(k, n) { const cap = bagCap(), base = bagUsed(); let m = 0; while (m < n) { const u = usedWith(k, m + 1); if (u > cap && u > base) break; m++; } return m; }
 const fits = (k, n) => roomFor(k, n || 1) >= (n || 1);
 const groundItems = new Map();
+const groundT = new Map();   // cuándo cayó cada montón (para la animación)
+function dropLoot(k, n, x, y) { const key = me.a + ',' + x + ',' + y; if (!groundItems.has(key)) groundT.set(key, performance.now()); dropGround(k, n, x, y); return n; }
 function dropGround(k, n, x, y) { const key = me.a + ',' + (x ?? me.x) + ',' + (y ?? me.y), g = groundItems.get(key) || {}; g[k] = (g[k] || 0) + n; groundItems.set(key, g); }
 function pickGround(x, y) {
   const key = me.a + ',' + x + ',' + y, g = groundItems.get(key); if (!g) return;
@@ -2174,6 +2433,42 @@ function drawEqPreview() {
     inked(() => drawHuman([65, 152], 2.25, opt));
   } finally { ctx = prev; }
 }
+// arrastra un objeto fuera de la mochila y cae delante de ti
+function dragDrop(b, k, n) {
+  b.style.touchAction = 'none';
+  b.addEventListener('dragstart', e => e.preventDefault());
+  b.addEventListener('pointerdown', ev => {
+    if (ev.button > 0) return; ev.preventDefault();
+    const sx = ev.clientX, sy = ev.clientY; let ghost = null, out = false;
+    // fuera de las casillas = al suelo; mientras arrastras la mochila se vuelve transparente para ver el mundo
+    const isOut = e => { const t = document.elementFromPoint(e.clientX, e.clientY); return !(t && t.closest && t.closest('.cell')); };
+    const mv = e => {
+      if (!ghost && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) { ghost = document.createElement('div'); ghost.className = 'dragghost'; ghost.innerHTML = iconHTML(k) + (n > 1 ? '<b>' + n + '</b>' : '') + '<i>⬇️ Suelta para tirarlo</i>'; document.body.append(ghost); document.body.classList.add('invdrag'); }
+      if (ghost) { ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px'; out = isOut(e); ghost.classList.toggle('out', out); }
+    };
+    const up = e => {
+      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      document.body.classList.remove('invdrag');
+      if (!ghost) return; ghost.remove(); b.dragged = true; setTimeout(() => b.dragged = false, 50);
+      if (e.type === 'pointerup' && isOut(e)) dropItem(k, n);
+    };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  });
+}
+function dropItem(k, n) {
+  const free = have(k) - (wornCount(k) || 0); n = Math.min(n, free);
+  if (n <= 0) return toast('🎒 Eso lo llevas puesto o en la mano: quítatelo antes de tirarlo');
+  // delante de ti: hacia donde miras, o la casilla libre más cercana
+  const fw = me.fl ? [[-1, 0], [0, 1]] : [[1, 0], [0, -1]];
+  const cand = [...fw, [0, 1], [1, 0], [-1, 0], [0, -1], [0, 0]];
+  const [dx, dy] = cand.find(([a, b]) => (a === 0 && b === 0) || (passable(me.a, me.x + a, me.y + b) && !npcAt(me.a, me.x + a, me.y + b))) || [0, 0];
+  me.inv[k] -= n; if (me.inv[k] <= 0) delete me.inv[k];
+  if (me.weapon === k && !have(k)) me.weapon = 'fist';
+  me.belt = me.belt.map(q => q && have(q) ? q : null);
+  dropLoot(k, n, me.x + dx, me.y + dy); sfx('wood', .4);
+  toast('⬇️ Tiras ' + ITEMS[k].n.toLowerCase() + (n > 1 ? ' ×' + n : '') + '. Pasa por encima para recogerlo');
+  renderInv(); renderBelt(); renderQuick(); updateStats(); publish(); save();
+}
 function invCell(k, n, opts) {
   const b = document.createElement('button'); b.className = 'cell' + (opts && opts.cls ? ' ' + opts.cls : '') + (invSel === (opts && opts.sel || k) ? ' sel' : '');
   if (!k) { b.classList.add('empty'); if (opts && opts.ph) b.innerHTML = '<i>' + opts.ph + '</i>'; b.disabled = !(opts && opts.click); }
@@ -2183,7 +2478,8 @@ function invCell(k, n, opts) {
     b.title = it.n;
   }
   if (opts && opts.label) b.innerHTML += '<small>' + opts.label + '</small>';
-  b.addEventListener('click', () => { if (opts && opts.click) return opts.click(); invSel = opts && opts.sel || k; renderInv(); });
+  b.addEventListener('click', () => { if (b.dragged) { b.dragged = false; return; } if (opts && opts.click) return opts.click(); invSel = opts && opts.sel || k; renderInv(); });
+  if (k && !(opts && opts.click)) dragDrop(b, k, n);
   return b;
 }
 function renderInv() {
@@ -3046,13 +3342,13 @@ function drawVillager(o, now) {
   const c = iso(o.x + .5, o.y + .5); shadowAt(c, 8, 3.5);
   if (o.trainer) {
     const sw = Math.sin(now/700), punch = (now % 3200) < 260;
-    drawHuman([c[0], c[1]], .62, { moving:false, skin:[196,142,100], shirt:'#8a2e24', coat:[138,46,36], pants:[60,52,46], pantsOn:true, shoes:true, armor:1, hair:3, hairCol:'#2a1a10', eyes:'#2a1a10', front: () => drawHeld('espada', punch ? -1.2 : .4 + sw*.06, [196,142,100]) });
+    drawHuman([c[0], c[1]], PS, { moving:false, skin:[196,142,100], shirt:'#8a2e24', coat:[138,46,36], pants:[60,52,46], pantsOn:true, shoes:true, armor:1, hair:3, hairCol:'#2a1a10', eyes:'#2a1a10', front: () => drawHeld('espada', punch ? -1.2 : .4 + sw*.06, [196,142,100]) });
     if (!INK) overlays.push(() => { label(c, 'Brannoc · Instructor', '#ffb08a', 36); if (Math.floor(me.att.fue + me.att.arc + me.att.pun) < 30 && me.a === 'w') label([c[0], c[1] + Math.sin(now/200)*2], '!', '#ffd166', 50); });
     return;
   }
   const shame = tomasShame && now - tomasShame < 60000 && dlg;
   const sway = shame ? Math.sin(now/180)*1.5 : Math.sin(now/900)*.4;
-  drawHuman([c[0] + sway, c[1]], .62, { moving:false, skin:[226,182,140], shirt:'#7a9a5a', coat:[122,154,90], pants:[96,78,58], pantsOn:true, shoes:true, hair:0, hairCol:'#8a8a8a', eyes:'#3a2a1a', cover:!!shame, handBusy:!!shame });
+  drawHuman([c[0] + sway, c[1]], PS, { moving:false, skin:[226,182,140], shirt:'#7a9a5a', coat:[122,154,90], pants:[96,78,58], pantsOn:true, shoes:true, hair:0, hairCol:'#8a8a8a', eyes:'#3a2a1a', cover:!!shame, handBusy:!!shame });
   if (!INK) overlays.push(() => { label(c, 'Thoren', '#9fe0b0', 36); if (!shame && isNaked() && me.a === 'w') { const b = Math.sin(now/200)*2; label([c[0], c[1] + b], '!', '#ffd166', 50); } });
 }
 function drawStatic(o, now) {
@@ -3066,6 +3362,9 @@ function drawStatic(o, now) {
     case 'tipi': drawTipi(o); break;
     case 'adobe': drawAdobe(o); break;
     case 'landmark': drawLandmark(o, now); break;
+    case 'altar': drawAltar(o); break;
+    case 'obelisk': drawObelisk(o); break;
+    case 'ferry': drawFerry(o); break;
     case 'pillar': box(o.x + .25, o.y + .25, .5, .5, 6, [106,112,108]); boxZ(o.x + .3, o.y + .3, .4, .4, 6, 30, [132,140,136]); boxZ(o.x + .25, o.y + .25, .5, .5, 36, 6, [118,126,122]); break;
     case 'well': box(o.x + .15, o.y + .15, .7, .7, 14, '#8f8f99'); ctx.fillStyle = '#6b4423'; ctx.fillRect(c[0] - 16, c[1] - 40, 3, 26); ctx.fillRect(c[0] + 13, c[1] - 40, 3, 26); poly([[c[0]-22, c[1]-38], [c[0]+22, c[1]-38], [c[0], c[1]-52]], '#a8432f'); break;
     case 'dummy': if (o.target) { ctx.fillStyle = '#6b4423'; ctx.fillRect(c[0]-9, c[1]-22, 3, 22); ctx.fillRect(c[0]+6, c[1]-22, 3, 22); const tc = [c[0], c[1]-30]; for (const [r, col] of [[14,'#efe6cf'],[11,'#c0392b'],[8,'#efe6cf'],[5,'#c0392b'],[2,'#ffd166']]) { ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(tc[0], tc[1], r, r*1.05, 0, 0, 7); ctx.fill(); } break; }
@@ -3094,7 +3393,7 @@ const normLook = l => {
   const g = (v, n, d) => { v = Math.floor(Number(v)); return v >= 0 && v < n ? v : d; };
   l = l || {}; return { s:g(l.s, LOOK.skin.length, 2), h:g(l.h, LOOK.hair.length, 0), hc:g(l.hc, LOOK.hairCol.length, 0), e:g(l.e, LOOK.eyes.length, 0), es:g(l.es, LOOK.eyeShape.length, 0) };
 };
-const PS = .6;   // tamaño del personaje: más o menos la altura de una puerta
+const PS = .7;   // tamaño de las personas (jugador y NPC): más o menos la altura de una puerta
 // Dibuja un humano en coordenadas locales (unos 44 px de alto) escalado por S
 function drawHuman(c, S, opt) {
   ctx.save(); ctx.translate(c[0], c[1]); ctx.scale(opt.flip ? -S : S, S);
@@ -3275,7 +3574,9 @@ function drawPerson(o, x, y, you) {
   if (!INK && m === 'run' && moving) { const sg = o.fl ? -1 : 1; ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 2; for (const k of [0, 5]) { ctx.beginPath(); ctx.moveTo(c[0] - sg*(10 + k), c[1]-14+k); ctx.lineTo(c[0] - sg*(18 + k), c[1]-14+k); ctx.stroke(); } }
   if (!INK) overlays.push(() => {
     label(c, o.name, you ? '#ffd166' : '#fff', 36);
-    if (m === 'fight' || o.hp < MAXHP) hpBar(c, o.hp, MAXHP, 52);
+    const ttl = you ? me.title : o.title;
+    if (ttl) { const pu = .6 + .4*Math.sin(performance.now()/400); ctx.save(); ctx.shadowColor = 'rgba(190,160,255,' + pu + ')'; ctx.shadowBlur = 10; ctx.font = 'italic 700 12px Georgia, serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(20,10,40,.9)'; ctx.strokeText('✦ ' + ttl + ' ✦', c[0], c[1] - 52); ctx.fillStyle = '#d8c4ff'; ctx.fillText('✦ ' + ttl + ' ✦', c[0], c[1] - 52); ctx.restore(); }
+    if (m === 'fight' || o.hp < MAXHP) hpBar(c, o.hp, MAXHP, ttl ? 68 : 52);
     if (you) { ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(base[0], base[1], 11, 5, 0, 0, 7); ctx.stroke(); }
   });
 }
@@ -3292,6 +3593,7 @@ function drawNpc(n, x, y, now) {
   const D = NPCDEF[n.k], base = iso(x+.5, y+.5);
   const moving = Math.abs(n.x - x) + Math.abs(n.y - y) > .05;
   if (D.animal) { ctx.save(); ctx.translate(base[0], base[1]); ctx.scale(n.fl ? -.7 : .7, .7); drawAnimal(n.k, [0,0], moving, now + n.id*97); ctx.restore(); return; }
+  if (D.sage) { drawSage(n, base, now, moving); return; }
   if (D.elem) { drawElemental(n, base, now); if (n.hp < (n.mhp || D.hp) && !INK) overlays.push(() => hpBar(base, n.hp, n.mhp || D.hp, 44)); return; }
   if (D.foe === 'slime') { drawSlime(base, moving, now, n.st === 1, n.id); if (n.hp < (n.mhp || D.hp) && !INK) overlays.push(() => hpBar(base, n.hp, n.mhp || D.hp, 30)); return; }
   if (D.charge) { const stun = isHost ? curTurn() < (n.stun || 0) : n.tz, lg = (now - (n.lgT0 || -1e9)) / 420;
@@ -3299,7 +3601,7 @@ function drawNpc(n, x, y, now) {
     if (lg >= 0 && lg < 1 && n.lgD) { const k = Math.sin(lg*Math.PI) * (lg < .35 ? 1 : .8), sx = (n.lgD[0] - n.lgD[1])*TW/4, sy = (n.lgD[0] + n.lgD[1])*TH/4; b2 = [base[0] + sx*k*.9, base[1] + sy*k*.9]; fl = (n.lgD[0] - n.lgD[1]) < 0; }
     drawBoar(b2, moving, now, n.st === 2 || (lg >= 0 && lg < 1), stun, fl); if (n.hp < (n.mhp || D.hp) && !INK) overlays.push(() => hpBar(base, n.hp, n.mhp || D.hp, 34)); if (n.st === 2 && !INK) overlays.push(() => label([base[0], base[1] - 4], '❗', '#ff5a3c', 36)); return; }
   shadowAt(base, 9, 4);
-  const orc = D.foe === 'orc', S = orc ? .7 : D.boss ? PS*1.5 : PS;
+  const orc = D.foe === 'orc', S = orc ? PS*1.06 : D.boss ? PS*1.4 : PS;
   const sw = swingAngle(n.atkT0), nAng = sw !== null ? sw : n.st === 1 ? -1.1 : .5;
   const DS = { undead:{ skin:[228,222,200], coat:[200,194,176], pants:[180,174,156], hairCol:'#ddd', eyes:'#111' },
                mummy:{ skin:[214,200,160], coat:[226,214,178], pants:[206,194,156], hairCol:'#cbb98a', eyes:'#ffe14a' },
@@ -3469,34 +3771,34 @@ function drawInterior(hid, list, now) {
   }
   for (const f of it.items) if (f.pat) list.push({ k: f.x + f.y + 1, x: f.x, draw: () => {
     const p = iso(f.x + .5, f.y + .5), sw = Math.sin(now/900 + f.x)*.6;
-    drawHuman([p[0] + sw, p[1]], .78, { moving:false, skin:f.pat.skin, coat:f.pat.coat, shirt:rgb(f.pat.coat), pants:[70,56,44], pantsOn:true, shoes:true, hair:(f.x + f.y) % 5, hairCol:f.pat.hair, eyes:'#2a1a10', handBusy:true,
+    drawHuman([p[0] + sw, p[1]], PS, { moving:false, skin:f.pat.skin, coat:f.pat.coat, shirt:rgb(f.pat.coat), pants:[70,56,44], pantsOn:true, shoes:true, hair:(f.x + f.y) % 5, hairCol:f.pat.hair, eyes:'#2a1a10', handBusy:true,
       front:() => { ctx.fillStyle = '#d8a440'; ctx.fillRect(6, -26, 6, 8); ctx.fillStyle = '#fff6dc'; ctx.fillRect(6, -27, 6, 2); } });
     if (!INK) overlays.push(() => label(p, f.pat.name.split(',')[0], '#f3d58a', 46));
   }}); else list.push({ k: f.x + f.w + f.y + f.d - 1.1, x: f.x, draw: () => drawFurn(f, now) });
   if (it.shop) list.push({ k: 1 + 2.5 - .5, x: 2.5, draw: () => { // el mercader detrás del mostrador
     const p = iso(3.5, 1.5);
     const sh = dlg && shopShameWho === 'merchant';
-    drawHuman([p[0] + (sh ? Math.sin(now/170)*1.5 : 0), p[1]], .8, { moving:false, skin:[214,166,128], coat:[158,124,78], pants:[104,84,60], hair:1, hairCol:'#6a4a2a', eyes:'#3a2a1a', cover:sh, handBusy:sh, front:() => { ctx.fillStyle = '#56704a'; ctx.fillRect(-9, -50, 18, 6); } });
+    drawHuman([p[0] + (sh ? Math.sin(now/170)*1.5 : 0), p[1]], PS, { moving:false, skin:[214,166,128], coat:[158,124,78], pants:[104,84,60], hair:1, hairCol:'#6a4a2a', eyes:'#3a2a1a', cover:sh, handBusy:sh, front:() => { ctx.fillStyle = '#56704a'; ctx.fillRect(-9, -50, 18, 6); } });
     if (!INK) overlays.push(() => label(p, 'Orrin, el mercader', '#ffd166', 48));
   }});
   if (it.tavern) list.push({ k: 1 + 2.5 - .5, x: 2.5, draw: () => {   // la tabernera
     const p = iso(3.5, 1.5), wipe = Math.sin(now/260);
-    drawHuman([p[0], p[1]], .8, { moving:false, skin:[226,176,140], coat:[150,52,60], shirt:'#f0e2c0', pants:[60,40,40], pantsOn:true, shoes:true, hair:2, hairCol:'#a0401a', eyes:'#3a2a1a', handBusy:true,
+    drawHuman([p[0], p[1]], PS, { moving:false, skin:[226,176,140], coat:[150,52,60], shirt:'#f0e2c0', pants:[60,40,40], pantsOn:true, shoes:true, hair:2, hairCol:'#a0401a', eyes:'#3a2a1a', handBusy:true,
       front:() => { ctx.fillStyle = '#f0e8d8'; ctx.fillRect(-2 + wipe*5, -24, 8, 5); } });
     if (!INK) overlays.push(() => label(p, 'Elyra, la tabernera', '#f3d58a', 48));
   }});
   if (it.healer) list.push({ k: 1 + 2.5 - .5, x: 2.5, draw: () => {   // la curandera
     const p = iso(3.5, 1.5);
-    drawHuman([p[0], p[1] + Math.sin(now/800)], .8, { moving:false, skin:[222,180,146], coat:[92,124,70], pants:[70,90,56], pantsOn:true, shoes:true, hair:2, hairCol:'#d8d8d8', eyes:'#3a5a2a', front:() => { ctx.fillStyle = '#9ad0a0'; ctx.fillRect(4, -30, 5, 8); } });
+    drawHuman([p[0], p[1] + Math.sin(now/800)], PS, { moving:false, skin:[222,180,146], coat:[92,124,70], pants:[70,90,56], pantsOn:true, shoes:true, hair:2, hairCol:'#d8d8d8', eyes:'#3a5a2a', front:() => { ctx.fillStyle = '#9ad0a0'; ctx.fillRect(4, -30, 5, 8); } });
     if (!INK) overlays.push(() => label(p, 'Sylwen, la curandera', '#9fe0b0', 48));
   }});
   if (it.artisan && now - forgeT0 < 1300) list.push({ k:12, x:6, draw:() => forgeSparks(now) });
   if (it.artisan) list.push({ k: 1 + 2.5 - .5, x: 2.5, draw: () => {
     const forging = now - forgeT0 < 1300, p = forging ? iso(5.45, 4.55) : iso(3.5, 1.5), sh = dlg && shopShameWho === 'artisan';
     if (forging) { const ph = ((now - forgeT0 - 180 + 380) % 380)/380, ang = ph < .25 ? -1.7 + ph*7.6 : .2 - (ph - .25)*2.5;
-      drawHuman([p[0], p[1]], .82, { moving:false, skin:[200,150,110], coat:[90,80,72], pants:[70,60,52], pantsOn:true, shoes:true, hair:4, hairCol:'#2a2a2a', eyes:'#2a2a2a', handBusy:true, front:() => { ctx.fillStyle = '#5a3a22'; ctx.fillRect(-8, -24, 16, 12); drawHeld('hammer', ang, [200,150,110]); } });
+      drawHuman([p[0], p[1]], PS, { moving:false, skin:[200,150,110], coat:[90,80,72], pants:[70,60,52], pantsOn:true, shoes:true, hair:4, hairCol:'#2a2a2a', eyes:'#2a2a2a', handBusy:true, front:() => { ctx.fillStyle = '#5a3a22'; ctx.fillRect(-8, -24, 16, 12); drawHeld('hammer', ang, [200,150,110]); } });
       if (!INK) overlays.push(() => label(p, 'Durgan, el artesano', '#ffd166', 50)); return; }
-    drawHuman([p[0] + (sh ? Math.sin(now/170)*1.5 : 0), p[1]], .82, { moving:false, skin:[200,150,110], coat:[90,80,72], pants:[70,60,52], pantsOn:true, shoes:true, hair:4, hairCol:'#2a2a2a', eyes:'#2a2a2a', cover:sh, handBusy:sh,
+    drawHuman([p[0] + (sh ? Math.sin(now/170)*1.5 : 0), p[1]], PS, { moving:false, skin:[200,150,110], coat:[90,80,72], pants:[70,60,52], pantsOn:true, shoes:true, hair:4, hairCol:'#2a2a2a', eyes:'#2a2a2a', cover:sh, handBusy:sh,
       front:() => { ctx.fillStyle = '#5a3a22'; ctx.fillRect(-8, -24, 16, 12); if (!sh) drawHeld('hacha', .9 + Math.sin(now/300)*.6, [200,150,110]); } });
     if (!INK) overlays.push(() => label(p, 'Durgan, el artesano', '#ffd166', 50));
   }});
@@ -3668,7 +3970,7 @@ function spriteHit(px, py) {   // px, py en coordenadas lógicas del lienzo
 }
 function nearestFoe() {
   let best = null, bd = 1e9;
-  for (const n of npcs) { if (n.dead >= 0 || n.a !== me.a || NPCDEF[n.k].animal && false) continue; if (me.a === 'w' && !visible.has(idx(n.x, n.y))) continue; const d = Math.abs(n.x - me.x) + Math.abs(n.y - me.y); if (d <= 8 && d < bd) { bd = d; best = n; } }
+  for (const n of npcs) { if (n.dead >= 0 || n.a !== me.a || (NPCDEF[n.k].sage && n.duel !== myKey())) continue; if (me.a === 'w' && !visible.has(idx(n.x, n.y))) continue; const d = Math.abs(n.x - me.x) + Math.abs(n.y - me.y); if (d <= 8 && d < bd) { bd = d; best = n; } }
   return best;
 }
 function stepTowardCell(tx, ty) {   // un paso hacia un objetivo, probando el eje más largo primero
@@ -3701,6 +4003,12 @@ function drawCoin(x, y, r, spin) {
 function drawCoinFx(now, dt) {
   if (lastGold === null) lastGold = me.gold;
   if (started && me.gold > lastGold) coinBurst(me.gold - lastGold);
+  if (started && me.gold < lastGold) {   // pagas: la moneda pasa de ti al vendedor
+    const n = lastGold - me.gold, t0 = performance.now();
+    effects.push({ x:me.x, y:me.y, coin:'-' + n, color:'#ff8a7a', t0, a:me.a });
+    if (me.a !== 'w') effects.push({ x:3, y:1, coin:'+' + n, color:'#9fe8a0', t0:t0 + 150, a:me.a });
+    sfx('coin'); setTimeout(() => sfx('coin', .6), 140);
+  }
   lastGold = me.gold;
   for (let i = coinFx.length - 1; i >= 0; i--) {
     const c = coinFx[i]; if (now < c.t0) continue; const a = (now - c.t0)/900; if (a > 1 || c.a !== me.a) { coinFx.splice(i, 1); continue; }
@@ -3801,6 +4109,149 @@ function windFx(T, now, dt, b) {
 }
 
 
+// ---------- Isla de los Espíritus: el altar, los obeliscos, las flores y los insectos arcoíris ----------
+const hue = (h, s, l, a) => 'hsla(' + (h % 360) + ',' + s + '%,' + l + '%,' + (a === undefined ? 1 : a) + ')';
+function drawAltarPlatform(now) {   // círculo de piedra con runas en el suelo (debajo de todo)
+  const c = iso(ISLE_C.x + .5, ISLE_C.y), t = now/1000;
+  ctx.save(); ctx.translate(c[0], c[1]); ctx.scale(1, .5);
+  ctx.fillStyle = '#5a5a66'; ctx.beginPath(); ctx.arc(0, 6, 104, 0, 7); ctx.fill();
+  ctx.fillStyle = '#8a8a98'; ctx.beginPath(); ctx.arc(0, 0, 100, 0, 7); ctx.fill();
+  ctx.fillStyle = '#a4a4b2'; ctx.beginPath(); ctx.arc(0, 0, 78, 0, 7); ctx.fill();
+  ctx.strokeStyle = '#6e6e7c'; ctx.lineWidth = 3; for (let k = 0; k < 12; k++) { const a = k*Math.PI/6; ctx.beginPath(); ctx.moveTo(Math.cos(a)*78, Math.sin(a)*78); ctx.lineTo(Math.cos(a)*100, Math.sin(a)*100); ctx.stroke(); }
+  if (!INK) {
+    for (let k = 0; k < 24; k++) { const a = k*Math.PI/12 + t*.15; ctx.fillStyle = hue(t*60 + k*15, 90, 70, .55 + .35*Math.sin(t*3 + k)); ctx.save(); ctx.translate(Math.cos(a)*89, Math.sin(a)*89); ctx.rotate(a); ctx.fillRect(-3, -5, 6, 10); ctx.restore(); }
+    ctx.strokeStyle = hue(t*80, 90, 70, .5); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, 60 + Math.sin(t*2)*3, 0, 7); ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawAltar(o) {
+  const c = iso(o.x + .5, o.y + .5), t = performance.now()/1000;
+  box(o.x + .1, o.y + .1, .8, .8, 6, [120,118,132]); boxZ(o.x + .2, o.y + .2, .6, .6, 6, 12, [150,146,164]); boxZ(o.x + .05, o.y + .05, .9, .9, 18, 4, [96,92,110]);
+  if (INK) return;
+  // paño con las cartas del destino sobre el altar
+  ctx.fillStyle = '#5a2a7a'; ctx.beginPath(); ctx.moveTo(c[0] - 20, c[1] - 24); ctx.lineTo(c[0], c[1] - 33); ctx.lineTo(c[0] + 20, c[1] - 24); ctx.lineTo(c[0], c[1] - 15); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#e8c04a'; ctx.lineWidth = 1; ctx.stroke();
+  // cristal que flota y gira, con un haz de luz arcoíris
+  const fy = c[1] - 60 + Math.sin(t*1.6)*4, w = 9*Math.abs(Math.cos(t*1.2)) + 2;
+  overlays.push(() => {
+    const g = ctx.createLinearGradient(0, fy - 140, 0, fy); g.addColorStop(0, hue(t*60, 90, 75, 0)); g.addColorStop(1, hue(t*60, 90, 75, .35));
+    ctx.fillStyle = g; ctx.fillRect(c[0] - 7, fy - 140, 14, 140);
+    const gl = ctx.createRadialGradient(c[0], fy, 0, c[0], fy, 46); gl.addColorStop(0, hue(t*60 + 120, 90, 75, .45)); gl.addColorStop(1, hue(t*60 + 120, 90, 75, 0)); ctx.fillStyle = gl; ctx.fillRect(c[0] - 46, fy - 46, 92, 92);
+    ctx.fillStyle = hue(t*60, 80, 70); ctx.beginPath(); ctx.moveTo(c[0], fy - 16); ctx.lineTo(c[0] + w, fy); ctx.lineTo(c[0], fy + 16); ctx.lineTo(c[0] - w, fy); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.beginPath(); ctx.moveTo(c[0], fy - 16); ctx.lineTo(c[0] + w*.4, fy - 2); ctx.lineTo(c[0], fy + 4); ctx.closePath(); ctx.fill();
+    // cartas de tarot que orbitan el cristal
+    for (let k = 0; k < 3; k++) { const a = t*1.1 + k*2.09, x = c[0] + Math.cos(a)*24, y = fy + Math.sin(a)*8; drawTarotCard(x, y, Math.cos(a)*.3, 1 + Math.sin(a)*.1, k); }
+    if (Math.random() < .35) sparkBurst(c[0] + (Math.random() - .5)*30, fy + (Math.random() - .5)*20, 1, 'rgba(255,255,255,A)');
+  });
+}
+function drawTarotCard(x, y, rot, sc, k) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(sc, sc);
+  ctx.fillStyle = '#f4ead0'; ctx.fillRect(-5, -8, 10, 16); ctx.fillStyle = ['#5a2a7a','#1f4a8a','#8a1f3a'][k % 3]; ctx.fillRect(-4, -7, 8, 14);
+  ctx.fillStyle = '#e8c04a'; ctx.beginPath(); ctx.arc(0, -1, 2.2, 0, 7); ctx.fill(); ctx.fillRect(-.5, 2, 1, 4);
+  ctx.strokeStyle = '#e8c04a'; ctx.lineWidth = .8; ctx.strokeRect(-4, -7, 8, 14);
+  ctx.restore();
+}
+function drawObelisk(o) {
+  const c = iso(o.x + .5, o.y + .5), t = performance.now()/1000, h0 = t*50 + (o.x + o.y)*40;
+  box(o.x + .25, o.y + .25, .5, .5, 4, [110,108,124]);
+  ctx.fillStyle = INK ? '#7ab8d8' : hue(h0, 70, 62); ctx.beginPath(); ctx.moveTo(c[0] - 7, c[1] - 6); ctx.lineTo(c[0] - 5, c[1] - 40); ctx.lineTo(c[0], c[1] - 52); ctx.lineTo(c[0] + 5, c[1] - 40); ctx.lineTo(c[0] + 7, c[1] - 6); ctx.closePath(); ctx.fill();
+  if (INK) return;
+  ctx.fillStyle = hue(h0 + 40, 80, 80, .8); ctx.beginPath(); ctx.moveTo(c[0], c[1] - 52); ctx.lineTo(c[0] + 5, c[1] - 40); ctx.lineTo(c[0] + 7, c[1] - 6); ctx.lineTo(c[0] + 1, c[1] - 6); ctx.closePath(); ctx.fill();
+  overlays.push(() => { const g = ctx.createRadialGradient(c[0], c[1] - 34, 0, c[0], c[1] - 34, 30); g.addColorStop(0, hue(h0, 90, 70, .35)); g.addColorStop(1, hue(h0, 90, 70, 0)); ctx.fillStyle = g; ctx.fillRect(c[0] - 30, c[1] - 64, 60, 60); });
+}
+function drawRainbowFlower(f, now) {
+  const c = iso(f.x + .5 + f.ox, f.y + .5 + f.oy), t = now/1000, h0 = f.h + t*70, sw = Math.sin(t*1.6 + f.x)*1.5;
+  ctx.strokeStyle = '#3a8a4a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(c[0], c[1]); ctx.quadraticCurveTo(c[0] + sw, c[1] - 7, c[0] + sw, c[1] - 13); ctx.stroke();
+  ctx.fillStyle = '#4aa85a'; ctx.beginPath(); ctx.ellipse(c[0] + 3, c[1] - 5, 3, 1.4, -.5, 0, 7); ctx.fill();
+  const fx0 = c[0] + sw, fy0 = c[1] - 14;
+  for (let k = 0; k < 5; k++) { const a = k*1.2566 + t*.4; ctx.fillStyle = INK ? '#c88ad8' : hue(h0 + k*72, 90, 68); ctx.beginPath(); ctx.ellipse(fx0 + Math.cos(a)*3.4, fy0 + Math.sin(a)*2.4, 3, 2.1, a, 0, 7); ctx.fill(); }
+  ctx.fillStyle = '#fff6c0'; ctx.beginPath(); ctx.arc(fx0, fy0, 1.8, 0, 7); ctx.fill();
+  if (!INK) overlays.push(() => { const g = ctx.createRadialGradient(fx0, fy0, 0, fx0, fy0, 16); g.addColorStop(0, hue(h0, 95, 70, .4 + .15*Math.sin(t*3 + f.h))); g.addColorStop(1, hue(h0, 95, 70, 0)); ctx.fillStyle = g; ctx.fillRect(fx0 - 16, fy0 - 16, 32, 32); });
+}
+function drawIsleBugs(now) {   // mariposas y luciérnagas arcoíris
+  if (me.a !== 'w' || Math.hypot(me.x - ISLE.x, me.y - ISLE.y) > 18) return;
+  const t = now/1000;
+  for (let i = 0; i < 18; i++) {
+    const r = 1.5 + (i*.37 % 1)*(ISLE.R - 1.5), a = t*(.25 + (i % 5)*.06)*(i % 2 ? 1 : -1) + i*1.7;
+    const x = ISLE.x + Math.cos(a)*r + Math.sin(t*1.3 + i)*.4, y = ISLE.y + Math.sin(a)*r*.9 + Math.cos(t*1.1 + i)*.4;
+    if (!visible.has(idx(Math.floor(x), Math.floor(y)))) continue;
+    const c = iso(x, y), z = 22 + Math.sin(t*2 + i)*8, h0 = t*90 + i*40, px = c[0], py = c[1] - z;
+    if (i % 3 === 0) {   // luciérnaga
+      const g = ctx.createRadialGradient(px, py, 0, px, py, 9); g.addColorStop(0, hue(h0, 100, 75, .9)); g.addColorStop(1, hue(h0, 100, 75, 0)); ctx.fillStyle = g; ctx.fillRect(px - 9, py - 9, 18, 18);
+      ctx.fillStyle = '#fff'; ctx.fillRect(px - 1, py - 1, 2, 2);
+    } else {   // mariposa
+      const fl = Math.abs(Math.sin(t*14 + i)), dir = Math.cos(a) > 0 ? 1 : -1;
+      ctx.fillStyle = hue(h0, 90, 65, .95); ctx.beginPath(); ctx.ellipse(px - 3*fl, py, 3.5*fl + .5, 2.6, -.4, 0, 7); ctx.fill(); ctx.beginPath(); ctx.ellipse(px + 3*fl, py, 3.5*fl + .5, 2.6, .4, 0, 7); ctx.fill();
+      ctx.fillStyle = hue(h0 + 60, 90, 80, .9); ctx.beginPath(); ctx.ellipse(px - 2*fl, py + 2.5, 2*fl + .4, 1.6, -.3, 0, 7); ctx.fill(); ctx.beginPath(); ctx.ellipse(px + 2*fl, py + 2.5, 2*fl + .4, 1.6, .3, 0, 7); ctx.fill();
+      ctx.fillStyle = '#2a1a2a'; ctx.fillRect(px - .6, py - 2.5, 1.2, 5);
+      const g = ctx.createRadialGradient(px, py, 0, px, py, 10); g.addColorStop(0, hue(h0, 100, 75, .25)); g.addColorStop(1, hue(h0, 100, 75, 0)); ctx.fillStyle = g; ctx.fillRect(px - 10, py - 10, 20, 20);
+    }
+  }
+}
+function drawFerry(o) {
+  const c = iso(o.x + .5, o.y + .5), w = iso(o.wx + .5, o.wy + .5), t = performance.now()/1000, bob = Math.sin(t*1.8 + o.x)*1.5;
+  // la barca en el agua
+  ctx.save(); ctx.translate(w[0], w[1] + bob); ctx.rotate(Math.sin(t*1.3)*.04);
+  ctx.fillStyle = 'rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(0, 4, 28, 8, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = '#6a4226'; ctx.beginPath(); ctx.moveTo(-28, -8); ctx.lineTo(28, -8); ctx.quadraticCurveTo(22, 6, 0, 6); ctx.quadraticCurveTo(-22, 6, -28, -8); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#8a5a32'; ctx.fillRect(-26, -10, 52, 4); ctx.fillStyle = '#4a2e18'; ctx.fillRect(-14, -9, 3, 10); ctx.fillRect(10, -9, 3, 10);
+  ctx.fillStyle = '#5a3a20'; ctx.fillRect(-1, -42, 2.6, 34);   // mástil
+  ctx.fillStyle = '#efe6cc'; ctx.beginPath(); ctx.moveTo(1.6, -40); ctx.lineTo(20, -14); ctx.lineTo(1.6, -14); ctx.closePath(); ctx.fill();
+  if (!INK) { ctx.fillStyle = '#c84a3a'; ctx.fillRect(1.6, -44, 8, 4); }
+  ctx.restore();
+  // un poste con farolillo y el barquero
+  box(o.x + .15, o.y + .15, .14, .14, 26, [110,76,44]);
+  if (!INK) { const p = iso(o.x + .22, o.y + .22); ctx.fillStyle = 'rgba(255,210,120,' + (.7 + .3*Math.sin(t*5)) + ')'; ctx.fillRect(p[0] - 3, p[1] - 30, 6, 6); }
+  drawHuman([c[0], c[1]], PS, { moving:false, skin:[196,150,110], coat:[60,84,120], shirt:'#e8e0c8', pants:[70,60,52], pantsOn:true, shoes:true, hair:4, hairCol:'#7a7a7a', eyes:'#2a2a2a',
+    front:() => { ctx.fillStyle = '#2a3a5a'; ctx.fillRect(-8, -47, 16, 3); ctx.fillRect(-5, -52, 10, 5); } });   // gorra de marinero
+  if (!INK) overlays.push(() => { label(c, 'Marlo · Barquero', '#9fd8ff', 46); label([c[0], c[1] + Math.sin(t*3)*2], '⛵', '#fff', 60); });
+}
+
+// ---------- Aldric, el Guardián de los Espíritus: un viejo con toga y bastón ----------
+const half = n => n.hp < (n.mhp || NPCDEF.sage.hp)/2;
+function drawSage(n, base, now, moving) {
+  const inv = n.inv && n.duel, mineDuel = n.duel && n.duel === myKey();
+  ctx.save();
+  if (inv) ctx.globalAlpha *= mineDuel ? .14 + .06*Math.sin(now/120) : .05;
+  const wind = n.st === 3, chg = n.st === 2, sa = swingAngle(n.atkT0);
+  const flip = faceFlip(n, n.fx, n.fy);
+  const t = now/1000;
+  // tarotista: turbante con joya, túnica morada con estrellas doradas, fular, aros y cartas del destino que flotan en sus manos
+  drawHuman(base, PS, { flip, moving, run: moving && !!n.duel, handBusy:true, skin:[176,124,92], coat:[92,40,120], shirt:'#6a2a8a', pants:[70,30,96], pantsOn:true, shoes:true, hair:0, hairCol:'#d8d8d8', eyes: chg ? '#ff3a2a' : '#8ae0ff',
+    front:() => {
+      // falda larga de la túnica con estrellas
+      ctx.fillStyle = '#5a2478'; ctx.beginPath(); ctx.moveTo(-8, -14); ctx.lineTo(8, -14); ctx.lineTo(11, 0); ctx.lineTo(-11, 0); ctx.closePath(); ctx.fill();
+      if (!INK) { ctx.fillStyle = '#f2c94c'; for (const [sx, sy] of [[-5, -24], [4, -20], [-2, -9], [6, -5], [-7, -4]]) { ctx.beginPath(); ctx.moveTo(sx, sy - 1.8); ctx.lineTo(sx + .6, sy - .5); ctx.lineTo(sx + 1.8, sy); ctx.lineTo(sx + .6, sy + .5); ctx.lineTo(sx, sy + 1.8); ctx.lineTo(sx - .6, sy + .5); ctx.lineTo(sx - 1.8, sy); ctx.lineTo(sx - .6, sy - .5); ctx.closePath(); ctx.fill(); } }
+      // fular dorado y barba blanca corta
+      ctx.fillStyle = '#e8b030'; ctx.fillRect(-8, -28, 16, 3.4); ctx.beginPath(); ctx.moveTo(4, -26); ctx.lineTo(8, -14); ctx.lineTo(4.5, -15); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#ececea'; ctx.beginPath(); ctx.moveTo(-4.5, -32); ctx.lineTo(4.5, -32); ctx.lineTo(0, -26); ctx.closePath(); ctx.fill();
+      // turbante con joya
+      ctx.fillStyle = '#7a2a9a'; ctx.beginPath(); ctx.ellipse(0, -44, 9.5, 6, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#9a3ab8'; ctx.beginPath(); ctx.ellipse(-1, -47, 7, 4, -.2, 0, 7); ctx.fill();
+      ctx.fillStyle = '#f2c94c'; ctx.fillRect(-9, -42, 18, 1.6);
+      ctx.fillStyle = INK ? '#3ac8a8' : hue(t*80, 90, 60); ctx.beginPath(); ctx.moveTo(0, -46); ctx.lineTo(2.4, -43); ctx.lineTo(0, -40); ctx.lineTo(-2.4, -43); ctx.closePath(); ctx.fill();
+      // aros
+      ctx.strokeStyle = '#f2c94c'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(-7.5, -33, 1.8, 0, 7); ctx.stroke();
+      // cartas en abanico en la mano (giran rápido al invocar el remolino)
+      const spin = wind ? t*10 : sa !== null ? sa*3 : Math.sin(t*1.5)*.15;
+      for (let k = 0; k < 3; k++) drawTarotCard(10 + k*2.5, -20 - k, -.4 + k*.4 + spin*(k - 1)*.3, .85, k);
+      if (!INK) { // bola de cristal flotando
+        const by = -30 + Math.sin(t*2)*2, g = ctx.createRadialGradient(-12, by - 1, 0, -12, by, 6); g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(.4, hue(t*60, 80, 75, .85)); g.addColorStop(1, hue(t*60 + 90, 80, 45, .9));
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(-12, by, 5, 0, 7); ctx.fill(); }
+    } });
+  // cartas que orbitan a su alrededor durante el duelo
+  if (n.duel && !INK) for (let k = 0; k < (half(n) ? 5 : 3); k++) { const a = t*(wind ? 4 : 1.4) + k*6.283/(half(n) ? 5 : 3); drawTarotCard(base[0] + Math.cos(a)*20, base[1] - 26 + Math.sin(a)*7, Math.cos(a)*.4, .9, k); }
+  ctx.restore();
+  if (!INK) {
+    if (wind) whirls.length < 6 && Math.random() < .2 && whirls.push({ x:n.x, y:n.y, a:n.a, t0:now, R:2.5, inward:false });
+    if (chg) for (let k = 0; k < 3; k++) { ctx.fillStyle = 'rgba(160,140,110,' + (.5 - k*.15) + ')'; ctx.beginPath(); ctx.arc(base[0] + (Math.random() - .5)*20, base[1] - 2, 3 + k*1.5, 0, 7); ctx.fill(); }
+    overlays.push(() => {
+      if (!inv) label(base, n.duel ? 'Aldric ⚔️' : 'Aldric, el Tarotista · Guardián de los Espíritus', '#e0c4ff', 50);
+      if (n.duel && !inv) hpBar(base, n.hp, n.mhp || NPCDEF.sage.hp, 64);
+      if (!n.duel && n.dead < 0 && me.title !== SAGE_TITLE && Math.abs(me.x - n.x) + Math.abs(me.y - n.y) < 8) label([base[0], base[1] + Math.sin(now/200)*2], '!', '#ffd166', 66);
+      if (wind) label(base, '🌪️', '#bfefff', 80); if (chg) label(base, '❗', '#ff5a3c', 80);
+    });
+  }
+}
 // ---------- elemental de fuego: una llama viva que se estampa contra ti ----------
 function drawElemental(n, base, now) {
   const t = now/1000 + n.id*1.7, lg = (now - (n.lgT0 || -1e9)) / 380;
@@ -3893,8 +4344,10 @@ function iconURL(k) {
     if (['cuchillo','espada','mandoble','lanza','palo','hacha','pico','pala','evolc','hvolc','ehielo','hhielo'].includes(k)) { const sc = k === 'mandoble' || k === 'lanza' ? 1 : k === 'cuchillo' ? 1.9 : k === 'palo' ? 1.25 : 1.35; g.translate(k === 'cuchillo' ? 16 : 11, k === 'cuchillo' ? 34 : 39); g.rotate(.78); g.scale(sc, sc); g.translate(-9, 22); inked(() => drawHeld(k, 0, null, true)); }
     else inked(() => drawItemIcon(k));
   } catch (e) {} finally { ctx = prev; }
-  return ICON_CACHE[k] = c.toDataURL();
+  ICON_CV[k] = c; return ICON_CACHE[k] = c.toDataURL();
 }
+const ICON_CV = {};
+const iconCv = k => { if (!ICON_CV[k]) iconURL(k); return ICON_CV[k]; };
 const iconHTML = k => ITEMS[k] ? '<img class="iic" alt="' + escH(ITEMS[k].n) + '" src="' + iconURL(k) + '">' : '';
 
 // =====================================================================
@@ -3978,7 +4431,7 @@ function glide(o, tx, ty, step) {
   if (!Number.isFinite(o.fx) || !Number.isFinite(o.fy)) { o.fx = tx; o.fy = ty; }
   if (!Number.isFinite(tx) || !Number.isFinite(ty) || !(step > 0)) return 0;
   let dx = tx - o.fx, dy = ty - o.fy;
-  if (Math.abs(dx) + Math.abs(dy) > 6) { o.fx = tx; o.fy = ty; return 0; }   // saltos grandes (puertas, cristal…): sin animación
+  if (Math.abs(dx) + Math.abs(dy) > (o.pullT && performance.now() - o.pullT < 1500 ? 14 : 6)) { o.fx = tx; o.fy = ty; return 0; }   // saltos grandes (puertas, cristal…): sin animación
   if (Math.abs(dx) < 1e-3 && Math.abs(dy) < 1e-3) { o.fx = tx; o.fy = ty; return step; }
   const sx = dx - dy; if (Math.abs(sx) > .02) o.fl = sx < 0;   // mira hacia donde corre
   const firstX = Math.abs(dx) >= Math.abs(dy) && Math.abs(dx) > 1e-3 && !(Math.abs(dy) > 1e-3 && Math.abs(dy) < .999 && Math.abs(dy) < Math.abs(dx) && Math.abs(dy - Math.round(dy)) > 1e-3);
@@ -4003,7 +4456,7 @@ function frameInner(now) {
   if (!me.wp) me.wp = [];
   if (me.wp.length && (Math.abs(me.wp[0][0] - me.fx) + Math.abs(me.wp[0][1] - me.fy) > 2.6 || me.wp.length > 4)) me.wp.splice(0, me.wp.length - (me.wp.length > 4 ? 3 : 0));
   if (Math.abs(me.x - me.fx) + Math.abs(me.y - me.fy) > .01) { me.lagT = (me.lagT || 0) + dt; if (me.lagT > 1.5) { me.fx = me.x; me.fy = me.y; me.wp.length = 0; me.lagT = 0; } } else me.lagT = 0;
-  { let budget = RUN_SPD*dt*(me.wp.length > 2 ? 1.6 : 1);
+  { let budget = RUN_SPD*dt*(me.wp.length > 2 ? 1.6 : 1)*(me.pullT && now - me.pullT < 1500 ? 3.5 : 1);
     while (budget > 0) { const tg = me.wp[0] || [me.x, me.y], r = glide(me, tg[0], tg[1], budget); budget = r; if (me.wp.length && Math.abs(me.fx - tg[0]) + Math.abs(me.fy - tg[1]) < 1e-3) { me.wp.shift(); if (!me.wp.length) break; } else break; } }
   for (const o of others.values()) glide(o, o.x, o.y, RUN_SPD*dt*(Math.abs(o.x - o.fx) + Math.abs(o.y - o.fy) > 2 ? 1.5 : 1));
   for (const n of npcs) glide(n, n.x, n.y, RUN_SPD*.85*dt*(Math.abs(n.x - n.fx) + Math.abs(n.y - n.fy) > 2 ? 1.5 : 1));
@@ -4071,8 +4524,26 @@ function frameInner(now) {
   for (const [key, n] of groundArrows) { const [a, ax, ay] = key.split(','); if (a !== me.a) continue; const x = +ax, y = +ay;
     list.push({ k:x + y + .9, x, draw:() => { const c = iso(x + .5, y + .5); for (let j = 0; j < Math.min(n, 3); j++) { ctx.strokeStyle = '#8a6a44'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(c[0] - 4 + j*4, c[1]); ctx.lineTo(c[0] - 9 + j*4, c[1] - 14); ctx.stroke(); ctx.fillStyle = '#e8e8ec'; ctx.fillRect(c[0] - 11 + j*4, c[1] - 17, 4, 4); } } }); }
   for (const [i, t0] of vrocks) { const x = i % N, y = (i / N) | 0; if (Math.abs(x - me.x) > 13 || Math.abs(y - me.y) > 13 || !vrockAlive(i, T) || !visible.has(i)) continue; list.push({ k:x + y + .9, x, draw:() => { const so = shakeOff(i, now); ctx.save(); ctx.translate(so, 0); drawVrock(x, y, t0, now, T); ctx.restore(); } }); }
-  for (const [key, g] of groundItems) { const [a, ax, ay] = key.split(','); if (a !== me.a) continue; const x = +ax, y = +ay, ic = ITEMS[Object.keys(g)[0]];
-    list.push({ k:x + y + .9, x, draw:() => { const c = iso(x + .5, y + .5); ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(c[0], c[1], 8, 3.5, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#9a7448'; ctx.beginPath(); ctx.ellipse(c[0], c[1] - 5, 7, 6, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#7a5630'; ctx.fillRect(c[0] - 3, c[1] - 12, 6, 3); if (!INK && ic) overlays.push(() => label([c[0], c[1]], ic.icon, '#fff', 20)); } }); }
+  if (me.a === 'w' && Math.abs(ISLE_C.x - me.x) < 16 && Math.abs(ISLE_C.y - me.y) < 16) {
+    if (visible.has(idx(ISLE_C.x, ISLE_C.y))) list.push({ k:ISLE_C.x + ISLE_C.y - 4.5, x:ISLE_C.x, draw:() => drawAltarPlatform(now) });
+    for (const f of RAINBOW) if (visible.has(idx(f.x, f.y))) list.push({ k:f.x + f.y + .5, x:f.x, draw:() => drawRainbowFlower(f, now) });
+  }
+  for (const [key, g] of groundItems) { const [a, ax, ay] = key.split(','); if (a !== me.a) continue; const x = +ax, y = +ay, ks = Object.keys(g).slice(0, 5), t0 = groundT.get(key) || 0;
+    list.push({ k:x + y + .9, x, draw:() => {
+      const c = iso(x + .5, y + .5), sp = Math.min(1, (now - t0)/450);
+      ks.forEach((k, i) => {
+        const an = i*2.4 + (ks.length > 1 ? .6 : 0), r = ks.length > 1 ? 9 : 0, ox = Math.cos(an)*r, oy = Math.sin(an)*r*.5;
+        const bob = Math.sin(now/420 + i*1.7 + x)*2.5, lift = 12 + bob + (1 - sp)*Math.sin(sp*Math.PI)*30, px = c[0] + ox*sp, py = c[1] + oy*sp;
+        ctx.fillStyle = 'rgba(0,0,0,' + (.28 - bob*.03) + ')'; ctx.beginPath(); ctx.ellipse(px, py, 7 - bob*.4, 3, 0, 0, 7); ctx.fill();
+        if (INK) return;
+        const cvI = iconCv(k); if (!cvI) return;
+        const sz = 22; ctx.save(); ctx.translate(px, py - lift); ctx.rotate(Math.sin(now/700 + i)*.12);
+        if (Q.bloom) { ctx.shadowColor = 'rgba(255,236,170,.8)'; ctx.shadowBlur = 8; }
+        ctx.drawImage(cvI, -sz/2, -sz/2, sz, sz); ctx.restore();
+        if (g[k] > 1) overlays.push(() => { ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.strokeText('×' + g[k], px + 9, py - lift + 10); ctx.fillStyle = '#fff'; ctx.fillText('×' + g[k], px + 9, py - lift + 10); });
+        if (Math.random() < .03) { const q = [px + (Math.random() - .5)*14, py - lift + (Math.random() - .5)*14]; sparkBurst(q[0], q[1], 1, 'rgba(255,245,200,A)'); }
+      });
+    } }); }
   for (const [id, b] of bags) if (indoor && b.a === me.a) list.push({ k:b.x + b.y + .95, x:b.x, draw:() => drawBag(b.x, b.y, b) });
   for (const o of others.values()) {
     if (o.a !== me.a) continue;
@@ -4175,7 +4646,7 @@ function frameInner(now) {
   if (lockTarget && lockTarget.dead < 0 && lockTarget.a === me.a && me.mode === 'fight') { const c = iso(lockTarget.fx + .5, lockTarget.fy + .5); ctx.strokeStyle = 'rgba(255,90,60,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(c[0], c[1], 15 + Math.sin(now/150)*2, 7, 0, 0, 7); ctx.stroke(); }
   for (const f of overlays) f();
   drawSparks(now, dt);
-  drawCoinFx(now, dt); drawItemPops(now);
+  drawCoinFx(now, dt); drawItemPops(now); drawWhirls(now); drawIsleBugs(now);
   if (areaFade > 0) { ctx.fillStyle = 'rgba(0,0,0,' + areaFade + ')'; ctx.fillRect(0, 0, CW, CH); areaFade = Math.max(0, areaFade - dt*2.2); }
   if (me.weapon === 'arco' && me.mode === 'fight' && (me.a === 'w' || isDun(me.a)) && canAttack() && stepsLeft() > 0) {
     const tg = [];
@@ -4198,6 +4669,8 @@ function frameInner(now) {
     if (age > 1.2 || e.a !== me.a) { effects.splice(i, 1); continue; }
     const c = iso(e.x+.5, e.y+.5);
     if (e.arrow) { const p = Math.min(1, age/.25); if (age < .3) { const a0 = iso(e.x0 + .5, e.y0 + .5), a1 = iso(e.x + .5, e.y + .5), px = a0[0] + (a1[0] - a0[0])*p, py = a0[1] + (a1[1] - a0[1])*p - 16 - Math.sin(p*Math.PI)*14; ctx.strokeStyle = '#c49a64'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(px - (a1[0]-a0[0])*.06, py - (a1[1]-a0[1])*.06); ctx.lineTo(px, py); ctx.stroke(); } continue; }
+    if (e.coin) { if (age < 0) continue; const k = Math.min(1, age/.15), y = c[1] - 64 - age*28; ctx.globalAlpha = Math.max(0, 1 - Math.max(0, age - .7)/.5);
+      drawCoin(c[0] - 12, y - 5, 7*(.6 + .4*k), now/120); ctx.font = '900 18px Impact, "Arial Black", sans-serif'; ctx.textAlign = 'left'; ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.strokeStyle = '#160c18'; ctx.strokeText(e.coin, c[0] - 2, y + 2); ctx.fillStyle = e.color; ctx.fillText(e.coin, c[0] - 2, y + 2); ctx.globalAlpha = 1; continue; }
     if (e.slash) { if (age < .35) { const k = age/.35; ctx.strokeStyle = 'rgba(255,255,255,' + (1 - k) + ')'; ctx.lineWidth = 5*(1 - k) + 1; ctx.beginPath(); ctx.arc(c[0], c[1] - 18, 22, -2.4 + k*1.2, -.6 + k*1.6); ctx.stroke(); } continue; }
     if (e.big) { const k = Math.min(1, age/.12), sz = 26 + (1 - k)*14; ctx.save(); ctx.translate(c[0] + 14, c[1] - 52 - age*26); ctx.rotate(-.15); ctx.globalAlpha = Math.max(0, 1 - Math.max(0, age - .6)/.6);
       ctx.font = '900 ' + sz + 'px Impact, Haettenschweiler, "Arial Black", sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 6; ctx.lineJoin = 'round'; ctx.strokeStyle = '#160c18'; ctx.strokeText(e.text, 0, 0); ctx.fillStyle = e.color; ctx.fillText(e.text, 0, 0); ctx.restore(); continue; }
