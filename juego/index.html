@@ -243,8 +243,16 @@
     body.fs .side{position:fixed;right:8px;bottom:8px}
     body.fs .side{gap:5px} body.fs .side .btn{font-size:11px !important;padding:7px 9px !important;opacity:.95}
   }
+  /* ventanas en pantalla completa: ocupan la pantalla y se pueden desplazar */
+  body.fs .panel.show{position:fixed;inset:max(8px,env(safe-area-inset-top)) 6px 6px 6px;z-index:60;max-height:none;overflow:auto;-webkit-overflow-scrolling:touch}
+  body.fs #dialog{z-index:70}
+  body.fs.pnl .top,body.fs.pnl .stats,body.fs.pnl .attrs,body.fs.pnl .controls,body.fs.pnl .modes{visibility:hidden}
   @media (orientation:portrait){
-    body.fs .stage{position:fixed;inset:0;padding-top:76px;overflow:auto;justify-content:flex-start}
+    body.fs .top{top:6px;right:6px;left:6px;justify-content:flex-end;flex-wrap:nowrap}
+    body.fs .top .topb,body.fs #sndBtn{font-size:10px;padding:3px 6px !important}
+    body.fs .stats{top:40px;left:6px;max-width:62vw}
+    body.fs .attrs{top:40px;left:auto;right:6px;max-width:34vw}
+    body.fs .stage{position:fixed;inset:0;padding-top:78px;overflow:auto;justify-content:flex-start}
     body.fs .wrap{width:100vw}
   }
   /* ===== pantalla de título animada ===== */
@@ -320,7 +328,7 @@
     <button id="fsBtn" class="topb">⛶ Pantalla completa</button>
   </div>
   <div class="stats">
-    <span>❤️ <b id="hp">20</b>/20</span>
+    <span>❤️ <b id="hp">10</b>/10</span>
     <span>🍗 <b id="food">80</b>%</span>
     <span id="status" style="color:#ff9a9a"></span>
     <span class="g"><i class="coin"></i> <b id="gold">0</b></span>
@@ -350,7 +358,7 @@
       <div class="setrow"><b>Teclado</b><small>Flechas o WASD: moverte · Q (o 1/3) Desenvainar/Envainar · 4-8 acciones rápidas · Espacio: acción · I Mochila · M Mapa · G Guía · F Pantalla completa · Esc: cerrar</small></div>
     </div>
     <div class="panel" id="guidePanel"><button class="x" data-close>✕</button><h3>📖 GUÍA DEL EXPLORADOR</h3><div id="guideBody" class="guide">
-      <h4>⏳ Turnos</h4><p>Cada 2 segundos empieza un turno para todos a la vez. Con el arma envainada corres hasta 3 pasos por turno; desenvainada das 1 paso o 1 acción. Si no haces nada, el turno se pierde.</p>
+      <h4>⏳ Turnos</h4><p>Cada 2 segundos empieza un turno para todos a la vez. Con el arma envainada corres hasta 3 pasos por turno; desenvainada das hasta 2 pasos, o 1 paso y un ataque. Si no haces nada, el turno se pierde.</p>
       <h4>💪 Atributos</h4><p>Empiezas flojo en todo. Fuerza (armas, talar, picar, cavar), Tiro con arco (disparar) y Puños (pelear a puñetazos) suben practicando y solo mejoran tu tasa de acierto. El daño y la defensa los da el equipo. El campo de práctica de Brannoc enseña, pero muy despacio.</p>
       <h4>⚔️ Combate</h4><p>Pulsa ⚔️ Desenvainar (tardas un turno en sacar el arma) y toca al enemigo. Con 🛡️ Envainar guardas el arma y el escudo a la espalda para correr. Los enemigos te persiguen corriendo 2 casillas por turno y también fallan. El escudo para golpes. La armadura de cuero quita 1 de daño, la de hierro 2, la de hielo 3 y la de fuego 4.</p>
       <h4>🌪️ El Guardián de los Espíritus</h4><p>En la Isla de los Espíritus, al norte, espera Aldric, el tarotista, junto a su altar de cristal. Para llegar, habla con Marlo, el barquero del embarcadero de la aldea: la ida cuesta 🪙 5 y la vuelta es gratis. Si aceptas su desafío, el duelo es 1 contra 1 y nadie más puede meterse. Esquiva según tu arma y cómo vaya el combate; a media vida se vuelve invisible hasta que ataca; si te alejas, lanza un remolino que te arrastra hasta él, y si vuelves a alejarte pronto, embiste y te deja a un golpe. No te mata: cuando te deja a un golpe, el duelo acaba. Si le vences, llevarás sobre tu nombre el título de Guardián de los Espíritus y podrás invocar su remolino cada 10 turnos para atraer a los enemigos.</p>
@@ -399,7 +407,7 @@ try { console.log("%cPixel Probe · Alpha — © 2026 Pixel Probe", "color:#ffd1
 // =====================================================================
 //  CONFIGURACIÓN
 // =====================================================================
-const N = 112, TURN = 2000, MAXHP = 20, TW = 64, TH = 32;
+const N = 112, TURN = 2000, MAXHP = 10, TW = 64, TH = 32;
 const DAYLEN = 600;                         // turnos por día (20 min)
 const VIL_RESPAWN = 240, CHEST_REFILL = 600, ROCK_REGROW = 400, CORPSE_EPOCH = 400, NPC_RESPAWN = 150, BAG_LIFE = 900;
 const PIX = '"Press Start 2P", monospace';
@@ -856,25 +864,25 @@ const houseOf = a => isHouse(a) ? (houses[+a.slice(1)] || Object.assign(ROOMH, {
 //  NPC: orcos, bandidos y animales (los simula un jugador «anfitrión»)
 // =====================================================================
 const NPCDEF = {
-  orc_spear: { name:'Orco lancero',   hp:14, dmg:[2,3], reach:1, sight:6, foe:'orc', w:'spear', acc:.7 },
-  orc_mach:  { name:'Orco machetero', hp:16, dmg:[2,4], reach:1, sight:6, foe:'orc', w:'machete', acc:.72 },
-  orc_axe:   { name:'Grukk, jefe orco', hp:22, dmg:[3,5], reach:1, sight:5, foe:'orc', w:'axe', acc:.68 },
-  ban_knife: { name:'Bandido del Sirocco', hp:10, dmg:[2,3], reach:1, sight:7, foe:'bandit', w:'knife', acc:.66 },
-  ban_spear: { name:'Bandido lancero',hp:12, dmg:[2,3], reach:1, sight:7, foe:'bandit', w:'spear', acc:.66 },
-  ban_bow:   { name:'Bandido arquero',hp:10, dmg:[1,3], reach:5, sight:8, foe:'bandit', w:'bow', ranged:true, acc:.58 },
+  orc_spear: { name:'Orco lancero',   hp:14, dmg:[1,2], reach:1, sight:6, foe:'orc', w:'spear', acc:.7 },
+  orc_mach:  { name:'Orco machetero', hp:16, dmg:[1,3], reach:1, sight:6, foe:'orc', w:'machete', acc:.72 },
+  orc_axe:   { name:'Grukk, jefe orco', hp:22, dmg:[2,4], reach:1, sight:5, foe:'orc', w:'axe', acc:.68 },
+  ban_knife: { name:'Bandido del Sirocco', hp:10, dmg:[1,2], reach:1, sight:7, foe:'bandit', w:'knife', acc:.66 },
+  ban_spear: { name:'Bandido lancero',hp:12, dmg:[1,2], reach:1, sight:7, foe:'bandit', w:'spear', acc:.66 },
+  ban_bow:   { name:'Bandido arquero',hp:10, dmg:[1,2], reach:5, sight:8, foe:'bandit', w:'bow', ranged:true, acc:.58 },
   deer:{name:'Ciervo',hp:5,animal:true}, rabbit:{name:'Conejo',hp:2,animal:true}, penguin:{name:'Pingüino',hp:4,animal:true},
   goat:{name:'Cabra',hp:5,animal:true}, camel:{name:'Camello',hp:8,animal:true}, lizard:{name:'Lagarto',hp:2,animal:true},
   salamander:{name:'Salamandra',hp:3,animal:true},
-  slime:    { name:'Slime de fuego', hp:9, dmg:[2,3], reach:1, sight:6, foe:'slime', w:'none', acc:.68, slow:true, respawn:220 },
-  sage:     { name:'Aldric, Guardián de los Espíritus', hp:135, dmg:[3,5], reach:1, sight:14, foe:'sage', w:'staff', acc:.78, sage:true, respawn:300 },
-  fuego:    { name:'Elemental de fuego', hp:10, dmg:[3,4], reach:1, sight:8, foe:'elem', w:'none', acc:.78, elem:true, respawn:200 },
-  boar:     { name:'Jabalí', hp:11, dmg:[3,5], reach:1, sight:7, foe:'boar', w:'none', acc:.7, charge:true, respawn:260 },
+  slime:    { name:'Slime de fuego', hp:9, dmg:[1,2], reach:1, sight:6, foe:'slime', w:'none', acc:.68, slow:true, respawn:220 },
+  sage:     { name:'Aldric, Guardián de los Espíritus', hp:135, dmg:[2,4], reach:1, sight:14, foe:'sage', w:'staff', acc:.78, sage:true, respawn:300 },
+  fuego:    { name:'Elemental de fuego', hp:10, dmg:[2,3], reach:1, sight:8, foe:'elem', w:'none', acc:.78, elem:true, respawn:200 },
+  boar:     { name:'Jabalí', hp:11, dmg:[2,4], reach:1, sight:7, foe:'boar', w:'none', acc:.7, charge:true, respawn:260 },
   // criaturas de la pirámide
-  esq:      { name:'Esqueleto',            hp:12, dmg:[2,3], reach:1, sight:7, foe:'undead', w:'espada', acc:.66 },
-  esq_arq:  { name:'Esqueleto arquero',    hp:9,  dmg:[2,3], reach:4, sight:8, foe:'undead', w:'bow', ranged:true, acc:.6 },
-  momia:    { name:'Momia',                hp:20, dmg:[2,4], reach:1, sight:5, foe:'mummy', w:'machete', acc:.64 },
-  guardian: { name:'Guardián de la tumba', hp:22, dmg:[3,5], reach:1, sight:7, foe:'guard', w:'spear', acc:.7 },
-  faraon:   { name:'Faraón Neferkhet, el Sin Rostro',    hp:130, dmg:[3,5], reach:1, sight:12, foe:'boss', w:'axe', acc:.7, boss:true, lim:6 } };
+  esq:      { name:'Esqueleto',            hp:12, dmg:[1,2], reach:1, sight:7, foe:'undead', w:'espada', acc:.66 },
+  esq_arq:  { name:'Esqueleto arquero',    hp:9,  dmg:[1,2], reach:4, sight:8, foe:'undead', w:'bow', ranged:true, acc:.6 },
+  momia:    { name:'Momia',                hp:20, dmg:[1,3], reach:1, sight:5, foe:'mummy', w:'machete', acc:.64 },
+  guardian: { name:'Guardián de la tumba', hp:22, dmg:[2,4], reach:1, sight:7, foe:'guard', w:'spear', acc:.7 },
+  faraon:   { name:'Faraón Neferkhet, el Sin Rostro',    hp:130, dmg:[2,4], reach:1, sight:12, foe:'boss', w:'axe', acc:.7, boss:true, lim:6 } };
 const npcs = [];
 function npcSpot(cx, cy, rad) {
   for (let t = 0; t < 200; t++) {
@@ -886,7 +894,7 @@ function npcSpot(cx, cy, rad) {
   return [cx, cy];
 }
 villages.forEach((v, vi) => {   // menos enemigos por aldea: da tiempo a saquearla; vuelven todos juntos al rato
-  const list = v.kind === 'orc' ? ['orc_spear','orc_mach','orc_axe'] : ['ban_knife','ban_spear','ban_bow'];
+  const list = v.kind === 'orc' ? ['orc_spear','orc_spear','orc_mach','orc_mach','orc_axe'] : ['ban_knife','ban_knife','ban_spear','ban_bow','ban_bow'];
   for (const k of list) { const [x, y] = npcSpot(v.x, v.y, 3); npcs.push({ id:npcs.length, k, x, y, hx:x, hy:y, hp:NPCDEF[k].hp, st:0, tg:'', dead:-1, vil:vi }); }
 });
 const ANIMALS = [['penguin',0,6],['goat',0,5],['salamander',1,6],['deer',2,7],['rabbit',2,8],['camel',3,5],['lizard',3,6]];
@@ -1007,9 +1015,9 @@ const ITEMS = {
   pan:{ n:'Pan', icon:'🍞', kind:'food', food:25, d:'Quita un poco el hambre.' },
   bayas:{ n:'Bayas', icon:'🫐', kind:'food', food:8, d:'De los arbustos del bosque. Con 3 se hace sopa en la hoguera.' },
   carne:{ n:'Carne cruda', icon:'🥩', kind:'food', food:10, d:'Mejor asada en la hoguera de la aldea.' },
-  unguento:{ n:'Ungüento curativo', icon:'🧴', kind:'med', d:'De la curandera. Cura 8 de vida al instante.' },
-  asado:{ n:'Carne asada', icon:'🍖', kind:'food', food:30, heal:2, d:'Llena bastante y cura 2 de vida.' },
-  sopa:{ n:'Sopa de bayas', icon:'🍲', kind:'food', food:40, heal:4, d:'Llena mucho y cura 4 de vida.' },
+  unguento:{ n:'Ungüento curativo', icon:'🧴', kind:'med', d:'De la curandera. Cura 5 de vida al instante (la mitad de tu vida).' },
+  asado:{ n:'Carne asada', icon:'🍖', kind:'food', food:30, heal:3, d:'Llena bastante y cura 3 de vida.' },
+  sopa:{ n:'Sopa de bayas', icon:'🍲', kind:'food', food:40, heal:5, d:'Llena mucho y cura 5 de vida.' },
   venda:{ n:'Venda', icon:'🩹', kind:'med', d:'Corta las hemorragias y cura 3 de vida.' },
   madera:{ n:'Madera', icon:'🪵', kind:'mat', d:'De los árboles.' },
   mena:{ n:'Mineral de hierro', icon:'🪨', kind:'mat', d:'Sacado con el pico de las menas de la nieve. Durgan lo funde en hierro.' },
@@ -1211,10 +1219,11 @@ function reveal(persist) {
 // =====================================================================
 //  TURNOS GLOBALES Y MODOS
 // =====================================================================
-const allowed = m => (m === 'run' ? 3 : 1);
+const allowed = m => (m === 'run' ? 3 : 2);   // envainado 3 pasos; desenvainado 2 pasos, o 1 paso y un ataque
 function syncTurn() { const t = curTurn(); if (me.turn !== t) { me.turn = t; me.used = 0; } }
 function stepsLeft() { syncTurn(); return Math.max(0, allowed(me.mode) - me.used); }
 function spend(n) { me.lastAct = curTurn(); syncTurn(); if (me.used + n > allowed(me.mode)) return false; me.used += n; return true; }
+function spendAttack() { me.lastAct = curTurn(); syncTurn(); if (me.used >= allowed(me.mode)) return false; me.used = 99; return true; }
 function spendAll() { me.lastAct = curTurn(); syncTurn(); if (me.used > 0) return false; me.used = 99; return true; }
 function setMode(m) {
   if (m === 'walk') m = 'run';   // ya no hay modo andar: siempre corres
@@ -1225,7 +1234,7 @@ function setMode(m) {
   me.shT0 = performance.now();   // animación de desenvainar / envainar
   sfx('swish', .5);
   const sb = el('sheathBtn'); if (sb) { sb.textContent = m === 'fight' ? '🛡️ Envainar' : '⚔️ Desenvainar'; sb.classList.toggle('on', m === 'fight'); }
-  toast(m === 'run' ? '🗡️ Envainas: el arma va a la espalda y corres 3 pasos por turno' : '⚔️ Desenvainas: 1 paso o 1 ataque por turno; podrás atacar el próximo turno');
+  toast(m === 'run' ? '🗡️ Envainas: el arma va a la espalda y corres 3 pasos por turno' : '⚔️ Desenvainas: hasta 2 pasos, o 1 paso y un ataque por turno; podrás atacar el próximo turno');
   publish(); updateAct();
 }
 const canAttack = () => me.mode === 'fight' && curTurn() >= me.drawTurn && !tired();
@@ -1904,7 +1913,7 @@ function survivalTick(T) {
   if (me.hp > 0) trapCheck(false);
   if (!me.lastAct) me.lastAct = T;
   if (T - me.lastAct >= 15 && T - (me.lastYawnT || 0) >= 20 && !dlg) yawn(T);
-  if (me.hp > 0 && me.mode !== 'fight' && !me.bleed && me.food > 30 && me.hp < MAXHP && T - me.lastHurtT >= 5 && T % (me.a === 'h6' ? 1 : 3) === 0) { me.hp++; if (me.a === 'h6' && me.hp === MAXHP) toast('🛏️ Has descansado en tu habitación. Vida al máximo'); publish(); }
+  if (me.hp > 0 && me.mode !== 'fight' && !me.bleed && me.food > 30 && me.hp < MAXHP && T - me.lastHurtT >= 4 && T % (me.a === 'h6' ? 1 : 2) === 0) { me.hp++; if (me.a === 'h6' && me.hp === MAXHP) toast('🛏️ Has descansado en tu habitación. Vida al máximo'); publish(); }
   updateStats();
 }
 
@@ -2071,7 +2080,7 @@ function attack(t) {
   if (WPN[me.weapon].ranged && !have('flechas')) return toast('🏹 No te quedan flechas. Durgan, el artesano, las fabrica');
   if (t.npc && NPCDEF[t.npc.k].sage && t.npc.duel !== myKey()) return talkSage(t.npc);
   if (t.npc && NPCDEF[t.npc.k].animal && !WPN[me.weapon].ranged) return toast(have('arco') ? '🏹 Los animales huyen antes de que te acerques: equípate el arco (desde la mochila o ⚔️ ARMA) para cazar' : '🏹 Para cazar animales necesitas un arco. Durgan, el artesano, lo fabrica');
-  if (!spendAll()) return waitMsg();
+  if (!spendAttack()) return waitMsg();
   let d = rollDmg(); const fist = me.weapon === 'fist', ranged = WPN[me.weapon].ranged, sk = fist ? 'pun' : ranged ? 'arc' : 'fue';
   const gf = t.dummy ? .07 : t.npc && NPCDEF[t.npc.k].animal ? .5 : 1;   // el muñeco enseña muchísimo más despacio
   swing('atk'); publish(); exert('atk');
@@ -2326,7 +2335,7 @@ try { const sv = JSON.parse(store.get('slots') || 'null'); if (Array.isArray(sv)
 let armed = null, editing = false;
 function renderQuick() {
   el('quick').classList.toggle('edit', editing);
-  el('quick').style.display = me.mode === 'fight' ? 'flex' : 'none';
+  el('quick').style.display = 'flex';
   document.querySelectorAll('#quick button[data-s]').forEach(b => {
     const k = slots[+b.dataset.s], A = ABIL[k];
     b.innerHTML = (k === 'wpn' ? (me.weapon === 'fist' ? '👊' : ITEMS[me.weapon].icon) : A.icon) + (k === 'rc' ? '<small>' + have('cristal') + '</small>' : A.short ? '<small>' + A.short + '</small>' : '');
@@ -2742,7 +2751,7 @@ function useBandage(k) {
   k = k === 'unguento' ? 'unguento' : 'venda';
   if (!have(k)) return;
   me.inv[k]--; if (me.inv[k] <= 0) delete me.inv[k];
-  if (k === 'unguento') { me.hp = Math.min(MAXHP, me.hp + 8); sfx('ui'); fx(me.x, me.y, '+8', '#9fe0b0'); toast('🧴 Te untas el ungüento (+8 vida)'); }
+  if (k === 'unguento') { me.hp = Math.min(MAXHP, me.hp + 5); sfx('ui'); fx(me.x, me.y, '+5', '#9fe0b0'); toast('🧴 Te untas el ungüento (+5 vida)'); }
   else { const was = me.bleed; me.bleed = false; me.hp = Math.min(MAXHP, me.hp + 3); sfx('ui'); toast(was ? '🩹 Te vendas la herida. Ya no sangras (+3 vida)' : '🩹 Te pones una venda (+3 vida)'); }
   updateStats(); renderInv(); publish(); save();
 }
@@ -4381,7 +4390,21 @@ function iconURL(k) {
     if (['cuchillo','espada','mandoble','lanza','palo','hacha','pico','pala','evolc','hvolc','ehielo','hhielo'].includes(k)) { const sc = k === 'mandoble' || k === 'lanza' ? 1 : k === 'cuchillo' ? 1.9 : k === 'palo' ? 1.25 : 1.35; g.translate(k === 'cuchillo' ? 16 : 11, k === 'cuchillo' ? 34 : 39); g.rotate(.78); g.scale(sc, sc); g.translate(-9, 22); inked(() => drawHeld(k, 0, null, true)); }
     else inked(() => drawItemIcon(k));
   } catch (e) {} finally { ctx = prev; }
-  ICON_CV[k] = c; return ICON_CACHE[k] = c.toDataURL();
+  const cc = centerIcon(c);
+  ICON_CV[k] = cc; return ICON_CACHE[k] = cc.toDataURL();
+}
+// centra el dibujo en su casilla: busca dónde hay píxeles y lo coloca en medio, con el mismo margen para todos
+function centerIcon(c) {
+  try {
+    const W = c.width, H = c.height, d = c.getContext('2d').getImageData(0, 0, W, H).data;
+    let x0 = W, y0 = H, x1 = -1, y1 = -1;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y*W + x)*4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 < 0) return c;
+    const bw = x1 - x0 + 1, bh = y1 - y0 + 1, M = 84, sc = Math.min(1.25, M/Math.max(bw, bh));
+    const o = document.createElement('canvas'); o.width = W; o.height = H; const g = o.getContext('2d');
+    g.imageSmoothingEnabled = true; g.drawImage(c, x0, y0, bw, bh, (W - bw*sc)/2, (H - bh*sc)/2, bw*sc, bh*sc);
+    return o;
+  } catch (e) { return c; }
 }
 const ICON_CV = {};
 const iconCv = k => { if (!ICON_CV[k]) iconURL(k); return ICON_CV[k]; };
@@ -4798,6 +4821,8 @@ function drawBigMap(now) {
 }
 function mapLoop(now) { if (!el('mapPanel').classList.contains('show')) return; if (now - mapOpenT > 120) { mapOpenT = now; drawBigMap(now); } requestAnimationFrame(mapLoop); }
 function openBigMap() { closePanels(); el('mapPanel').classList.add('show'); mapOpenT = 0; requestAnimationFrame(mapLoop); }
+// con una ventana abierta en pantalla completa se ocultan las barras que quedarían encima
+new MutationObserver(() => document.body.classList.toggle('pnl', !!document.querySelector('.panel.show'))).observe(document.body, { subtree:true, attributes:true, attributeFilter:['class'] });
 el('mini').addEventListener('click', () => { if (started) openBigMap(); });
 
 // --- minimapa ---
@@ -4889,7 +4914,7 @@ cv.addEventListener('click', ev => {
   if (man >= 1 && canAttack() && WPN[me.weapon].ranged && inReach(gx, gy)) { const t = attackableAt(gx, gy); if (t) return attack(t); if (man > 1) return toast('🏹 Apunta a un animal o enemigo marcado con la mira'); }
   if (man > 1 && canAttack() && inReach(gx, gy)) { const t = attackableAt(gx, gy); if (t) return attack(t); }
   if (man === 1) return tryStep(dx, dy);
-  if (man >= 2 && man <= 3 && me.mode === 'run' && stepsLeft() > 0) {
+  if (man >= 2 && man <= allowed(me.mode) && stepsLeft() > 0) {
     for (let k = 0; k < man && stepsLeft() > 0; k++) {
       const ex = gx - me.x, ey = gy - me.y; if (!ex && !ey) break;
       const opts = Math.abs(ex) >= Math.abs(ey) ? [[Math.sign(ex), 0], [0, Math.sign(ey)]] : [[0, Math.sign(ey)], [Math.sign(ex), 0]];
@@ -4898,7 +4923,7 @@ cv.addEventListener('click', ev => {
     }
     return;
   }
-  if (man > 1) toast(me.mode === 'run' ? 'Corriendo llegas hasta 3 casillas por turno' : 'Con el arma desenvainada das 1 paso: toca una casilla junto a ti');
+  if (man > 1) toast(me.mode === 'run' ? 'Corriendo llegas hasta 3 casillas por turno' : 'Con el arma desenvainada llegas hasta 2 casillas por turno');
 });
 
 // =====================================================================
