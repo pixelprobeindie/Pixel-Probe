@@ -343,6 +343,7 @@
     <div class="panel" id="mapPanel"><button class="x" data-close>✕</button><h3>🗺️ MAPA DEL MUNDO</h3><canvas id="bigmap" width="1000" height="560"></canvas><small id="mapInfo"></small></div>
     <div class="panel" id="setPanel"><button class="x" data-close>✕</button><h3>⚙️ AJUSTES</h3>
       <div class="setrow"><b>Calidad gráfica</b><div class="chips" id="qChips"></div><small id="qInfo"></small></div>
+      <div class="setrow"><b>Fotogramas por segundo</b><div class="chips" id="fpsChips"></div><small id="fpsInfo"></small></div>
       <div class="setrow"><b>Música</b><input type="range" id="musVol" min="0" max="100"></div>
       <div class="setrow"><b>Efectos y ambiente</b><input type="range" id="sfxVol" min="0" max="100"></div>
       <div class="setrow"><b>Texto de ayuda bajo los controles</b><div class="chips" id="hintChips"></div></div>
@@ -400,7 +401,7 @@ try { console.log("%cPixel Probe · Alpha — © 2026 Pixel Probe", "color:#ffd1
 // =====================================================================
 const N = 112, TURN = 2000, MAXHP = 20, TW = 64, TH = 32;
 const DAYLEN = 600;                         // turnos por día (20 min)
-const CHEST_REFILL = 600, ROCK_REGROW = 400, CORPSE_EPOCH = 400, NPC_RESPAWN = 150, BAG_LIFE = 900;
+const VIL_RESPAWN = 240, CHEST_REFILL = 600, ROCK_REGROW = 400, CORPSE_EPOCH = 400, NPC_RESPAWN = 150, BAG_LIFE = 900;
 const PIX = '"Press Start 2P", monospace';
 const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
 const el = id => document.getElementById(id);
@@ -630,8 +631,8 @@ function buildHostileVillage(b, kind) {
     addObj({ t:'campfire', x:cx, y:cy }, [[cx,cy]]);
     addObj({ t:'log', x:cx-2, y:cy }, [[cx-2,cy]]);
     addObj({ t:'log', x:cx+2, y:cy }, [[cx+2,cy]]);
-    addChest(cx-3, cy+1, 2, kind === 'orc' ? 'Cofre orco' : 'Cofre de los bandidos');
-    addChest(cx+4, cy-1, 2, kind === 'orc' ? 'Cofre orco' : 'Cofre de los bandidos');
+    addChest(cx-3, cy+1, 2, kind === 'orc' ? 'Cofre orco' : 'Cofre de los bandidos').vil = villages.length;
+    addChest(cx+4, cy-1, 2, kind === 'orc' ? 'Cofre orco' : 'Cofre de los bandidos').vil = villages.length;
     const v = { kind, x:cx, y:cy, b, name: kind === 'orc' ? 'Aldea orca' : 'Poblado de bandidos', icon: kind === 'orc' ? '👹' : '🏜️' };
     villages.push(v); return v;
   }
@@ -660,6 +661,11 @@ for (let b = 0; b < 4; b++) for (let n = 0, t = 0; n < 4 && t < 3000; t++) {
   const I = CEN[b], a = rnd()*6.283, r = 4 + rnd()*17, x = Math.floor(I.x + Math.cos(a)*r), y = Math.floor(I.y + Math.sin(a)*r);
   if (!areaFree(x, y, 1, 1, b)) continue;
   addChest(x, y, 0, 'Cofre perdido'); n++;
+}
+for (let n = 0, t = 0; n < 7 && t < 4000; t++) {   // menas de hierro también en el desierto
+  const I = CEN[3], a = rnd()*6.283, r = 6 + rnd()*16, x = Math.floor(I.x + Math.cos(a)*r), y = Math.floor(I.y + Math.sin(a)*r);
+  if (!inside(x,y) || GR[idx(x,y)] !== G.LAND || OB[idx(x,y)] >= 0 || NOPLANT[idx(x,y)] || BIO[idx(x,y)] !== 3) continue;
+  addObj({ t:'rock', x, y, b:3, size:1, hp:4, gives:1, ore:true }, [[x,y]]); n++;
 }
 for (let n = 0, t = 0; n < 16 && t < 4000; t++) {
   const I = CEN[0], a = rnd()*6.283, r = 6 + rnd()*17, x = Math.floor(I.x + Math.cos(a)*r), y = Math.floor(I.y + Math.sin(a)*r);
@@ -771,7 +777,8 @@ let CORPSES = corpsesOf(curTurn()), corpseEpoch = Math.floor(curTurn()/CORPSE_EP
 
 const ORE_REGROW = 300, BUSH_REGROW = 80, VOLC_REGROW = 900;
 const rockAlive = (o, T) => { const m = minedMap.get(idx(o.x, o.y)); return m === undefined || T - m >= (o.volc ? VOLC_REGROW : o.ice ? 600 : o.ore ? ORE_REGROW : ROCK_REGROW); };
-const chestFull = (o, T) => { const m = chestMap.get(o.cid); return m === undefined || T - m >= CHEST_REFILL; };
+// los cofres de las aldeas hostiles se rellenan cuando la aldea vuelve a poblarse
+const chestFull = (o, T) => { const m = chestMap.get(o.cid); if (o.vil !== undefined) return m === undefined || (T - m >= VIL_RESPAWN && npcs.some(n => n.vil === o.vil && n.dead < 0)); return m === undefined || T - m >= CHEST_REFILL; };
 
 const VROCK_LIFE = 200, vrocks = new Map();   // rocas volcánicas: casilla -> turno en que cayó la bomba
 function vrockAlive(i, T) { const t = vrocks.get(i); if (t === undefined || T - t >= VROCK_LIFE || T < t) return false; const m = minedMap.get(i); return m === undefined || m < t; }
@@ -878,10 +885,10 @@ function npcSpot(cx, cy, rad) {
   }
   return [cx, cy];
 }
-for (const v of villages) {
-  const list = v.kind === 'orc' ? ['orc_spear','orc_spear','orc_mach','orc_mach','orc_axe'] : ['ban_knife','ban_knife','ban_spear','ban_bow','ban_bow'];
-  for (const k of list) { const [x, y] = npcSpot(v.x, v.y, 3); npcs.push({ id:npcs.length, k, x, y, hx:x, hy:y, hp:NPCDEF[k].hp, st:0, tg:'', dead:-1 }); }
-}
+villages.forEach((v, vi) => {   // menos enemigos por aldea: da tiempo a saquearla; vuelven todos juntos al rato
+  const list = v.kind === 'orc' ? ['orc_spear','orc_mach','orc_axe'] : ['ban_knife','ban_spear','ban_bow'];
+  for (const k of list) { const [x, y] = npcSpot(v.x, v.y, 3); npcs.push({ id:npcs.length, k, x, y, hx:x, hy:y, hp:NPCDEF[k].hp, st:0, tg:'', dead:-1, vil:vi }); }
+});
 const ANIMALS = [['penguin',0,6],['goat',0,5],['salamander',1,6],['deer',2,7],['rabbit',2,8],['camel',3,5],['lizard',3,6]];
 for (const [k, b, n] of ANIMALS) for (let j = 0; j < n; j++) {
   const I = CEN[b], [x, y] = npcSpot(I.x, I.y, 17);
@@ -980,7 +987,7 @@ el('total').textContent = pois.length;
 const ITEMS = {
   pala:{ n:'Pala', icon:'🪏', dur:20, kind:'tool', d:'Desentierra cadáveres. Ahí está el oro.' },
   hacha:{ n:'Hacha', icon:'🪓', dur:40, kind:'tool', d:'Tala árboles.' },
-  pico:{ n:'Pico', icon:'⛏️', dur:40, kind:'tool', d:'Para sacar mineral de las menas de hierro de la nieve y romper la piedra volcánica.' },
+  pico:{ n:'Pico', icon:'⛏️', dur:40, kind:'tool', d:'Para sacar mineral de las menas de hierro (nieve y desierto), piedra de las rocas del bosque, hielo encantado y mineral de fuego.' },
   palo:{ n:'Palo de entrenamiento', icon:'🪵', dur:80, kind:'weapon', d:'Daño 1-2. Te lo dio Brannoc para practicar con los muñecos. Se lleva en el cinturón.' },
   cuchillo:{ n:'Cuchillo', icon:'🔪', dur:40, kind:'weapon', d:'Daño 2-3. Mucho mejor que los puños. Deja la otra mano libre para un escudo.' },
   espada:{ n:'Espada (1 mano)', icon:'🗡️', dur:80, kind:'weapon', d:'Daño 3-5. Espada de una mano: con un escudo en la otra.' },
@@ -1018,6 +1025,7 @@ const ITEMS = {
   hierro:{ n:'Hierro', icon:'⛓️', kind:'mat', d:'Lingotes fundidos. Sirven para las armas y armaduras buenas.' },
   cuero:{ n:'Cuero', icon:'🟫', kind:'mat', d:'De los animales.' },
   fibra:{ n:'Fibra', icon:'🌿', kind:'mat', d:'De los arbustos.' },
+  piedra:{ n:'Piedra', icon:'🪨', kind:'mat', d:'De las rocas del bosque, con el pico. Cada roca da muy poca. Orrin te la compra.' },
   cristal:{ n:'Cristal de regreso', icon:'💎', kind:'use', d:'Rómpelo y vuelves a la plaza de la aldea desde cualquier parte, incluso desde la pirámide. Gasta tu turno y se rompe al usarlo.' } };
 const BELTOK = k => k === 'cuchillo' || k === 'espada' || k === 'palo' || k === 'evolc' || k === 'hvolc' || k === 'ehielo' || k === 'hhielo' || (ITEMS[k] && ITEMS[k].kind === 'food');
 const WPN = { fist:{ d:[1,1], r:1 }, palo:{ d:[1,2], r:1 }, evolc:{ d:[6,8], r:1 }, hvolc:{ d:[6,8], r:1 }, ehielo:{ d:[4,6], r:1, ice:1 }, hhielo:{ d:[4,6], r:1, ice:1 }, cuchillo:{ d:[2,3], r:1 }, espada:{ d:[3,5], r:1 }, mandoble:{ d:[5,8], r:1, heavy:1, two:1 }, lanza:{ d:[3,5], r:2, two:1 }, arco:{ d:[2,3], r:5, two:1, ranged:1 } };
@@ -1025,7 +1033,7 @@ const DMG = new Proxy({}, { get:(t, k) => (WPN[k] || WPN.fist).d });
 const SHOP = { cuchillo:10, pala:12, hacha:14, pico:14, mochila:18, panuelo:4, cristal:6 };
 const TAVERN = { pan:3, asado:7, sopa:9 };
 const HEAL_SHOP = { venda:5, unguento:9 };
-const SELL = { madera:1, hierro:3, cuero:2, fibra:1, carne:1, bayas:1, hielo:5, pvolc:6 };
+const SELL = { madera:1, hierro:3, cuero:2, fibra:1, carne:1, bayas:1, hielo:5, pvolc:6, piedra:1 };
 const RECIPES = [
   { o:'espada',   g:18, m:{ hierro:2, madera:1, cuero:1 } },
   { o:'mandoble', g:30, m:{ hierro:4, madera:1, cuero:2 } },
@@ -1713,6 +1721,9 @@ function npcRun(n, tx, ty, T, away, stopAt) {   // corre: hasta 2 casillas en el
   if (Math.abs(tx - n.x) + Math.abs(ty - n.y) > stopAt || away) stepToward(n, tx, ty, T, away);
 }
 function npcTick(T) {
+  villages.forEach((V, vi) => { let al = false, ld = -1; for (const q of npcs) if (q.vil === vi) { if (q.dead < 0) al = true; else if (q.dead > ld) ld = q.dead; }
+    if (V.alive === false && al && me.a === 'w' && Math.hypot(me.x - V.x, me.y - V.y) < 22) toast(V.icon + ' ' + V.name + ': han vuelto a ocuparla, y sus cofres vuelven a estar llenos');
+    V.alive = al; V.lastDead = ld; });
   const allT = targetsWorld(), boss = npcs.find(n => NPCDEF[n.k].boss), sg = npcs.find(n => NPCDEF[n.k].sage), dk = sg && sg.duel;
   for (const n of npcs) {
     const D = NPCDEF[n.k], targets = allT.filter(t => t.a === n.a && t.key !== dk), MH = n.mhp || D.hp, DM = n.dmg || D.dmg;   // nadie se mete en el duelo del Guardián
@@ -1723,7 +1734,10 @@ function npcTick(T) {
       if (!moved) { n.x = n.hx; n.y = n.hy; }
       n.fx = n.x; n.fy = n.y; continue;
     }
-    if (n.dead >= 0) { if (T - n.dead >= (D.boss ? 900 : n.ally && boss && boss.dead < 0 ? 40 : D.respawn ? D.respawn + (n.id % 5)*30 : NPC_RESPAWN)) { n.dead = -1; n.hp = MH; n.x = n.hx; n.y = n.hy; n.fx = n.x; n.fy = n.y; n.st = 0; n.rest = 0; n.ch = 0; } continue; }
+    if (n.dead >= 0 && n.vil !== undefined) {   // aldea hostil: nadie vuelve hasta que caen todos, y entonces vuelven juntos
+      const V = villages[n.vil]; if (V.alive || T - V.lastDead < VIL_RESPAWN) continue;
+    }
+    if (n.dead >= 0) { if (T - n.dead >= (n.vil !== undefined ? 0 : D.boss ? 900 : n.ally && boss && boss.dead < 0 ? 40 : D.respawn ? D.respawn + (n.id % 5)*30 : NPC_RESPAWN)) { n.dead = -1; n.hp = MH; n.x = n.hx; n.y = n.hy; n.fx = n.x; n.fy = n.y; n.st = 0; n.rest = 0; n.ch = 0; } continue; }
     if (D.sage) { sageTick(n, T, allT); continue; }
     if (nTired(n, T)) { n.st = 0; n.tg = ''; continue; }   // agotado: recupera el aliento
     if (D.animal) {
@@ -2051,6 +2065,7 @@ function missFx(x, y) { effects.push({ x, y, text:'¡FALLO!', color:'#c8d0d8', t
 const groundArrows = new Map();
 function rollDmg() { const [lo, hi] = WPN[me.weapon].d; return lo + Math.floor(Math.random()*(hi - lo + 1)); }
 function attack(t) {
+  if (t && t.npc && !NPCDEF[t.npc.k].sage) lockTarget = t.npc;
   if (tired()) return tiredMsg();
   if (!canAttack()) return toast('🗡️ Aún te estás preparando para pelear');
   if (WPN[me.weapon].ranged && !have('flechas')) return toast('🏹 No te quedan flechas. Durgan, el artesano, las fabrica');
@@ -2156,7 +2171,7 @@ function mine(o) {
     else toast('⛏️ Picas la roca volcánica… (' + hits.get('r' + o.id) + '/' + o.hp + ')');
     return;
   }
-  if (!o.ore && !o.ice) return toast('🪨 Una roca enorme. Con el pico solo merece la pena picar las menas de hierro y de hielo encantado de la nieve y el mineral de fuego del volcán');
+  if (!o.ore && !o.ice && o.b !== 2) return toast('🪨 Una roca enorme. Con el pico puedes picar las rocas del bosque (dan poca piedra), las menas de hierro de la nieve y el desierto, el hielo encantado y el mineral de fuego del volcán');
   if (!have('pico')) return toast('⛏️ Necesitas un pico. Cómpralo al mercader de la aldea');
   if (tired()) return tiredMsg();
   if (!spendAll()) return waitMsg();
@@ -2167,7 +2182,7 @@ function mine(o) {
     markMined(idx(o.x, o.y), curTurn());
     if (o.ice) { shardBurst(o.x, o.y, ['#bfefff','#7fd4f4','#ffffff','#4aa8d8']); give('hielo', 1); toast('🧊 ¡Mena agotada! Hielo encantado +1. Durgan forja con él armas y armadura de hielo'); }
     else if (o.ore) { shardBurst(o.x, o.y, ['#6a6062','#8a7e80','#c8763a','#f0c080']); const n = 1 + (Math.random() < .5 ? 1 : 0); give('mena', n); toast('🪨 ¡Mena agotada! Mineral de hierro +' + n + '. Llévaselo a Durgan para fundirlo'); }
-    else { give('piedra', o.gives); toast('🪨 ¡Roca rota! Piedra +' + o.gives); }
+    else { shardBurst(o.x, o.y, ['#6a7074','#8a9296','#b8c0c4']); give('piedra', 1); toast('🪨 ¡Roca rota! Piedra +1. Las rocas dan poca piedra'); }
     renderInv(); save();
   } else toast('⛏️ Picas… (' + hits.get('r' + o.id) + '/' + o.hp + ')');
 }
@@ -2223,6 +2238,7 @@ const BLOCK_MSG = {
 
 function tryStep(dx, dy) {
   const nx = me.x + dx, ny = me.y + dy, T = curTurn();
+  me.dir = [dx, dy]; if (!me.lockFace) { if (dx - dy) me.fl = dx - dy < 0; me.rear = dx < 0 || dy < 0; }
   const t = attackableAt(nx, ny);
   if (t) return attack(t);
   if (me.a === 'w') {
@@ -2268,7 +2284,8 @@ function tryStep(dx, dy) {
     moveTo(nx, ny);
   }
 }
-function neighbors(fn) { for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) { const r = fn(me.x+dx, me.y+dy); if (r) return r; } return null; }
+// primero lo que tienes delante (la última dirección en la que te moviste o lo intentaste)
+function neighbors(fn) { const d = me.dir || [1,0]; for (const [dx, dy] of [d, [1,0],[-1,0],[0,1],[0,-1]]) { const r = fn(me.x+dx, me.y+dy); if (r) return r; } return null; }
 function currentAction() {
   if (me.a === 'w' && me.y === DUN_E.y && Math.abs(me.x - DUN_E.x + .5) <= 1) return { label:'🔺 Entrar en la pirámide', run:enterDungeon };
   if (isDun(me.a)) { const f = +me.a.slice(1); const st = neighbors((x, y) => { const c = dcell(f, x, y); return c === DG.UP || c === DG.DOWN ? c : 0; }); if (st && !(canAttack() && neighbors((x, y) => attackableAt(x, y)))) return { label: st === DG.UP ? (f === 1 ? '☀️ Salir' : '⬆️ Subir') : '⬇️ Bajar', run:() => useStairs(st) }; }
@@ -2294,7 +2311,7 @@ function currentAction() {
       return null;
     });
     if (r) return r;
-    const bu = bushAt(me.x, me.y, T) || neighbors((x, y) => bushAt(x, y, T));
+    const d = me.dir || [1,0], bu = bushAt(me.x + d[0], me.y + d[1], T) || bushAt(me.x, me.y, T) || neighbors((x, y) => bushAt(x, y, T));
     if (bu) return { label:'🌿 Recoger arbusto', run:() => gather(bu) };
   }
   return null;
@@ -2787,7 +2804,7 @@ function perfTick(now) {
   if (!perf.t0) { perf.t0 = now; perf.n = 0; return; }
   perf.n++;
   if (now - perf.t0 > 3000) {
-    const fps = perf.n * 1000 / (now - perf.t0); perf.t0 = now; perf.n = 0;
+    const fps = perf.n * 1000 / (now - perf.t0); perf.t0 = now; perf.n = 0; perf.fps = fps; if (el('setPanel').classList.contains('show')) renderSettings();
     if (qAuto && fps < 36 && QI > 0 && now - perf.last > 5000) { setQuality(QI - 1); perf.last = now; toast('⚙️ Calidad gráfica ajustada a ' + Q.n + ' para que vaya fluido'); }
   }
 }
@@ -2808,19 +2825,23 @@ function inkTables(w, h) {
   for (let i = 0; i < 64; i++) WOB[i] = (r() * 3) | 0;
   for (let x = 0; x < w; x++) WXB[x] = WOB[(x >> 4) & 63];
   const PQ = new Uint8Array(256); for (let i = 0; i < 256; i++) PQ[i] = Math.min(255, ((i + 5) / 11 | 0) * 11);
-  t = { GRN, WG, LUM, WOB, WXB, PQ }; INKF.set(key, t); return t;
+  t = { GRN, WG, LUM, CR:new Int16Array(n), CB:new Int16Array(n), WOB, WXB, PQ }; INKF.set(key, t); return t;
 }
 let inkFrame = 0;
 function inkFilter(c2, w, h) {
-  const { GRN, WG, LUM, WOB, WXB, PQ } = inkTables(w, h);
-  const im = c2.getImageData(0, 0, w, h), d = im.data, n = w*h, bo = (inkFrame >> 3) & 3, ETH = 49, HTH = .5;
-  for (let i = 0, p = 0; i < n; i++, p += 4) LUM[i] = (d[p]*77 + d[p+1]*150 + d[p+2]*29) >> 8;
+  const { GRN, WG, LUM, CR, CB, WOB, WXB, PQ } = inkTables(w, h);
+  const im = c2.getImageData(0, 0, w, h), d = im.data, n = w*h, bo = (inkFrame >> 3) & 3, ETH = 49, HTH = .5, ECT = 90;
+  for (let i = 0, p = 0; i < n; i++, p += 4) { const r = d[p], g = d[p+1], b = d[p+2]; LUM[i] = (r*77 + g*150 + b*29) >> 8; CR[i] = r - g; CB[i] = b - g; }
   for (let y = 0; y < h; y++) {
     const row = y*w, wy = WOB[(y >> 4) & 63], wy3 = WOB[(y >> 3) & 63];
     for (let x = 0; x < w; x++) {
       const i = row + x, l = LUM[i];
-      let e = 0; if (x < w-1) { const q = l - LUM[i+1]; e = q < 0 ? -q : q; } if (y < h-1) { const q = l - LUM[i+w]; e += q < 0 ? -q : q; }
-      const p = i << 2, dk = 1 - l/255, wv = WG[i];
+      const p = i << 2;
+      // borde por cambio de COLOR (no solo de luz): diferencia de tono con el píxel de la derecha y el de abajo
+      let e = 0, ec = 0;
+      if (x < w-1) { let q = l - LUM[i+1]; e = q < 0 ? -q : q; q = CR[i] - CR[i+1]; ec = q < 0 ? -q : q; q = CB[i] - CB[i+1]; ec += q < 0 ? -q : q; }
+      if (y < h-1) { let q = l - LUM[i+w]; e += q < 0 ? -q : q; q = CR[i] - CR[i+w]; ec += q < 0 ? -q : q; q = CB[i] - CB[i+w]; ec += q < 0 ? -q : q; }   // cambio de luz (e) y de color (ec)
+      const dk = 1 - l/255, wv = WG[i];
       let Rr = l + (d[p] - l)*1.6, Gg = l + (d[p+1] - l)*1.6, Bb = l + (d[p+2] - l)*1.6;
       Rr = (Rr + 3 + wv - 128)*1.14 + 128; Gg = (Gg + 3 + wv - 128)*1.14 + 128; Bb = (Bb + 2 + wv*.8 - 128)*1.14 + 128;
       const L2 = (Rr*77 + Gg*150 + Bb*29) * .00390625;
@@ -2832,7 +2853,7 @@ function inkFilter(c2, w, h) {
         if (dk > .6 && ((x - y + 1024 + wy3) & 3) === 0) { const h2 = .3 + (dk - .6)*.6; if (h2 > hh) hh = h2; }
         if (hh > 0) { if (hh > .5) hh = .5; Rr += (24 - Rr)*hh; Gg += (38 - Gg)*hh; Bb += (44 - Bb)*hh; }
       }
-      if (e > ETH) { const a = .72 + GRN[i]*.008; Rr += (22 - Rr)*a; Gg += (34 - Gg)*a; Bb += (38 - Bb)*a; }
+      if (e > ETH || ec > ECT) { const a = (e > ETH ? .72 : .8) + GRN[i]*.008; Rr += (16 - Rr)*a; Gg += (20 - Gg)*a; Bb += (24 - Bb)*a; }   // línea negra fina entre colores distintos
       d[p] = PQ[(Rr < 0 ? 0 : Rr > 255 ? 255 : Rr) | 0]; d[p+1] = PQ[(Gg < 0 ? 0 : Gg > 255 ? 255 : Gg) | 0]; d[p+2] = PQ[(Bb < 0 ? 0 : Bb > 255 ? 255 : Bb) | 0];
     }
   }
@@ -3145,9 +3166,16 @@ function drawPlantRaw(pl, x, y, wd) {
     const f = .5 + .5*Math.sin(performance.now()/200 + pl.i); ctx.fillStyle = 'rgb(255,' + (100 + f*90 | 0) + ',30)'; ctx.fillRect(c[0]-1, c[1]-20*s, 3, 4);
   } else if (k === 'flower') {
     const col = b === 0 ? [186,220,255] : b === 1 ? [255,110,40] : b === 3 ? [240,120,160] : FLOWERS[pl.col];
-    const fw = 0;   // el balanceo lo hace el «shader» de la planta entera, así el tallo nunca se separa de la flor
-    ctx.fillStyle = rgb(P.stem); ctx.fillRect(c[0]-1, c[1]-14*s, 2, 14*s); ctx.fillRect(c[0]-6, c[1]-8*s, 5, 2); ctx.fillStyle = rgb(T(col)); ctx.fillRect(c[0]-5 + fw, c[1]-18*s, 10, 6); ctx.fillRect(c[0]-3 + fw, c[1]-21*s, 6, 12);
-    ctx.fillStyle = rgb(P.center); ctx.fillRect(c[0]-1 + fw, c[1]-16*s, 3, 3);
+    // cada flor mira hacia un lado: de frente, girada a la izquierda o a la derecha, y un poco inclinada
+    const fl = hash(x, y, 913) < .5 ? -1 : 1, look = Math.floor(hash(x, y, 914)*3) - 1, tilt = look*fl;
+    const hx = c[0] + tilt*3*s, hy = c[1] - 17*s;
+    ctx.fillStyle = rgb(P.stem); ctx.beginPath(); ctx.moveTo(c[0] - 1, c[1]); ctx.lineTo(c[0] + 1, c[1]); ctx.lineTo(hx + 1, hy + 2); ctx.lineTo(hx - 1, hy + 2); ctx.closePath(); ctx.fill();
+    ctx.fillRect(fl > 0 ? c[0] - 6 : c[0] + 1, c[1] - 8*s, 5, 2);   // hoja a un lado u otro
+    ctx.fillStyle = rgb(T(col));
+    if (look === 0) { ctx.fillRect(hx - 5, hy - 2, 10, 6); ctx.fillRect(hx - 3, hy - 5, 6, 12); ctx.fillStyle = rgb(P.center); ctx.fillRect(hx - 1, hy, 3, 3); }   // de frente
+    else { const d = tilt > 0 ? 1 : -1;   // de perfil: corola aplastada que mira al lado
+      ctx.fillRect(hx - 2 - (d < 0 ? 2 : 0), hy - 5, 6, 12); ctx.fillRect(hx + d*1 - 3, hy - 3, 6, 8);
+      ctx.fillStyle = rgb(P.center); ctx.fillRect(hx + d*3 - 1, hy, 2.4, 3); }
   } else if (k === 'bush' && (b === 1 || b === 3)) {   // matorral marchito (desierto) o quemado (volcán)
     const burnt = b === 1; shadowAt(c, 11*s, 4*s);
     ctx.lineCap = 'round'; const BR = [[-12,-12,-5,-6],[-6,-18,-2,-9],[3,-20,1,-10],[10,-15,5,-7],[13,-8,7,-4]];
@@ -3402,17 +3430,22 @@ function drawHuman(c, S, opt) {
   const leg = opt.moving ? sn*(run ? 9 : 3.5) : 0, bob = opt.moving ? Math.abs(sn)*(run ? 3.2 : 1.2) : 0, arm = opt.moving ? sn*(run ? 6.5 : 2) : 0, stride = run ? sn*2.8 : 0;
   const skin = opt.skin, skinD = [skin[0]*.82, skin[1]*.8, skin[2]*.8];
   ctx.translate(0, -bob); if (run) { ctx.translate(0, -4); ctx.rotate(.13); ctx.translate(0, 4); }
+  const rear = !!opt.rear;   // de espaldas: lo que llevas a la espalda se ve delante y el arma de la mano queda detrás
+  const backItems = () => {
   if (opt.quiver) { ctx.save(); ctx.translate(-5, -18); ctx.rotate(-.35); ctx.fillStyle = '#6e4826'; ctx.fillRect(-2.5, -15, 5, 15); if (!INK) { for (let k = 0; k < 3; k++) { ctx.fillStyle = '#c49a64'; ctx.fillRect(-2 + k*1.6, -19, 1, 5); ctx.fillStyle = k === 1 ? '#c0392b' : '#f0f0f0'; ctx.fillRect(-2.4 + k*1.6, -21, 1.8, 3); } } ctx.restore(); }
   if (opt.bowBack) { ctx.save(); ctx.translate(2, -22); ctx.rotate(.5); ctx.strokeStyle = '#966840'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(0, 0, 13, -1.3, 1.3); ctx.stroke(); if (!INK) { ctx.strokeStyle = 'rgba(240,240,230,.9)'; ctx.lineWidth = .8; ctx.beginPath(); ctx.moveTo(Math.cos(-1.3)*13, Math.sin(-1.3)*13); ctx.lineTo(Math.cos(1.3)*13, Math.sin(1.3)*13); ctx.stroke(); } ctx.restore(); }
   if (opt.pack) { ctx.fillStyle = '#7a5230'; ctx.fillRect(-12, -29, 7, 14); ctx.fillStyle = '#5a3a1c'; ctx.fillRect(-12.5, -30, 8, 4); if (!INK) { ctx.fillStyle = '#a8763e'; ctx.fillRect(-11, -24, 5, 1.2); ctx.fillStyle = '#c8a046'; ctx.fillRect(-9, -27, 2, 2); } }
-  if (opt.fire && !INK) { const t = performance.now(); ctx.save(); ctx.translate(-1, -46); for (let k = 0; k < 3; k++) { const f = 1 + Math.sin(t/70 + k*2)*.25; ctx.fillStyle = ['rgba(255,90,20,.9)','rgba(255,170,40,.95)','rgba(255,240,150,1)'][k]; ctx.beginPath(); ctx.ellipse(-2 + k, -4 - k*1.5, 5 - k*1.4, (10 - k*2.5)*f, -.35, 0, 7); ctx.fill(); } ctx.restore(); }   // penacho de fuego
-  else if (opt.ice && !INK) { ctx.save(); ctx.translate(0, -46); const pu = .5 + .5*Math.sin(performance.now()/260); for (const [dx, h, a] of [[-4, 9, -.35], [0, 12, 0], [4, 9, .35]]) { ctx.save(); ctx.translate(dx, 0); ctx.rotate(a); ctx.fillStyle = 'rgba(150,226,255,.95)'; ctx.beginPath(); ctx.moveTo(-2, 0); ctx.lineTo(0, -h); ctx.lineTo(2, 0); ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,' + (.5 + .5*pu) + ')'; ctx.fillRect(-.5, -h*.8, 1, h*.5); ctx.restore(); } ctx.restore(); }
-  else if (opt.knight && !INK) { const sw = Math.sin(performance.now()/260)*.18; ctx.save(); ctx.translate(0, -46); ctx.rotate(-.5 + sw); ctx.fillStyle = '#b8282a'; ctx.beginPath(); ctx.ellipse(-5, -3, 7, 3.2, -.3, 0, 7); ctx.fill(); ctx.fillStyle = '#d84040'; ctx.beginPath(); ctx.ellipse(-3, -4, 4, 2, -.3, 0, 7); ctx.fill(); ctx.restore(); }   // penacho
   if (opt.back) opt.back();
   if (opt.shieldBack) { ctx.save(); ctx.translate(-3, -1); ctx.rotate(-.18);
     if (opt.knight) knightShield(Object.assign({}, opt, { shield:true }));
     else { ctx.fillStyle = '#8a5a30'; ctx.beginPath(); ctx.arc(-11, -21, 7.5, 0, 7); ctx.fill(); if (!INK) { ctx.fillStyle = '#6e4624'; ctx.fillRect(-18, -22, 14, 1.4); ctx.fillStyle = '#b0b8c0'; ctx.beginPath(); ctx.arc(-11, -21, 2, 0, 7); ctx.fill(); ctx.strokeStyle = '#6a727c'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(-11, -21, 7, 0, 7); ctx.stroke(); } }
     ctx.restore(); if (!INK) { ctx.fillStyle = '#5a3a1c'; ctx.save(); ctx.rotate(.6); ctx.fillRect(-14, -26, 22, 1.8); ctx.restore(); } }   // correa
+  };
+  if (!rear) backItems();
+  if (opt.fire && !INK) { const t = performance.now(); ctx.save(); ctx.translate(-1, -46); for (let k = 0; k < 3; k++) { const f = 1 + Math.sin(t/70 + k*2)*.25; ctx.fillStyle = ['rgba(255,90,20,.9)','rgba(255,170,40,.95)','rgba(255,240,150,1)'][k]; ctx.beginPath(); ctx.ellipse(-2 + k, -4 - k*1.5, 5 - k*1.4, (10 - k*2.5)*f, -.35, 0, 7); ctx.fill(); } ctx.restore(); }   // penacho de fuego
+  else if (opt.ice && !INK) { ctx.save(); ctx.translate(0, -46); const pu = .5 + .5*Math.sin(performance.now()/260); for (const [dx, h, a] of [[-4, 9, -.35], [0, 12, 0], [4, 9, .35]]) { ctx.save(); ctx.translate(dx, 0); ctx.rotate(a); ctx.fillStyle = 'rgba(150,226,255,.95)'; ctx.beginPath(); ctx.moveTo(-2, 0); ctx.lineTo(0, -h); ctx.lineTo(2, 0); ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,' + (.5 + .5*pu) + ')'; ctx.fillRect(-.5, -h*.8, 1, h*.5); ctx.restore(); } ctx.restore(); }
+  else if (opt.knight && !INK) { const sw = Math.sin(performance.now()/260)*.18; ctx.save(); ctx.translate(0, -46); ctx.rotate(-.5 + sw); ctx.fillStyle = '#b8282a'; ctx.beginPath(); ctx.ellipse(-5, -3, 7, 3.2, -.3, 0, 7); ctx.fill(); ctx.fillStyle = '#d84040'; ctx.beginPath(); ctx.ellipse(-3, -4, 4, 2, -.3, 0, 7); ctx.fill(); ctx.restore(); }   // penacho
+  if (rear && opt.front) opt.front();
   const STEEL = opt.fire ? [56,46,48] : opt.ice ? [150,206,232] : [150,158,170];
   ctx.fillStyle = rgb(opt.knight ? STEEL : opt.pants || skinD);
   ctx.fillRect(-5 - stride, -12 + Math.max(0, -leg)*.6, 4, 12 + bob - Math.max(0, -leg)*.6); ctx.fillRect(1 + stride, -12 + Math.max(0, leg)*.6, 4, 12 + bob - Math.max(0, leg)*.6);
@@ -3435,9 +3468,9 @@ function drawHuman(c, S, opt) {
     if (!INK) { ctx.fillStyle = opt.fire ? 'rgba(255,140,40,' + pu + ')' : opt.ice ? '#e8fbff' : '#d8e0ea'; ctx.fillRect(-11, -29, 3, 1.2); ctx.fillRect(8, -29, 3, 1.2); ctx.fillStyle = opt.fire ? 'rgba(255,120,30,' + pu + ')' : '#c8d0da'; ctx.fillRect(-5, -7 - Math.max(0, -leg)*.6, 4, 2); ctx.fillRect(1, -7 - Math.max(0, leg)*.6, 4, 2); }
   }
   if (opt.beltOn) { ctx.fillStyle = '#5a3a1c'; ctx.fillRect(-8.5, -17.5, 17, 2.6); if (!INK) { ctx.fillStyle = '#e0b44a'; ctx.fillRect(-1.5, -17.8, 3, 3.2); ctx.fillStyle = '#5a3a1c'; ctx.fillRect(-.5, -17, 1, 1.6); } }
-  if (opt.pouch) { ctx.fillStyle = '#7a5230'; ctx.fillRect(-10, -16, 5, 5.5); if (!INK) { ctx.fillStyle = '#a8763e'; ctx.fillRect(-10, -16, 5, 1.6); } }
-  if (opt.hip >= 3) { ctx.save(); ctx.translate(8, -15); ctx.rotate(.35); if (opt.hip === 3) { ctx.fillStyle = '#2a1a14'; ctx.fillRect(-1.5, 0, 3, 13); ctx.fillStyle = '#7a1a10'; ctx.fillRect(-2.8, -1.5, 5.6, 1.8); if (!INK) { ctx.fillStyle = 'rgba(255,140,40,.9)'; ctx.fillRect(-.4, 2, .8, 9); } } else { ctx.fillStyle = '#3a2418'; ctx.fillRect(-1, -4, 2, 15); ctx.fillStyle = '#2a2226'; ctx.fillRect(-5, -5, 6, 6); if (!INK) { ctx.fillStyle = '#ff8a2a'; ctx.fillRect(-5, -5, 1.2, 6); } } ctx.restore(); }
-  else if (opt.hip) { ctx.save(); ctx.translate(8, -15); ctx.rotate(.35); ctx.fillStyle = '#4a2e18'; ctx.fillRect(-1.3, 0, 2.6, opt.hip === 2 ? 13 : 8); ctx.fillStyle = opt.hip === 2 ? '#c8a046' : '#5a3a22'; ctx.fillRect(-2.5, -1.5, 5, 1.6); ctx.fillStyle = '#5a3a22'; ctx.fillRect(-.8, -5, 1.6, 4); ctx.restore(); }
+  if (false && opt.pouch) { ctx.fillStyle = '#7a5230'; ctx.fillRect(-10, -16, 5, 5.5); if (!INK) { ctx.fillStyle = '#a8763e'; ctx.fillRect(-10, -16, 5, 1.6); } }
+  if (false && opt.hip >= 3) { ctx.save(); ctx.translate(8, -15); ctx.rotate(.35); if (opt.hip === 3) { ctx.fillStyle = '#2a1a14'; ctx.fillRect(-1.5, 0, 3, 13); ctx.fillStyle = '#7a1a10'; ctx.fillRect(-2.8, -1.5, 5.6, 1.8); if (!INK) { ctx.fillStyle = 'rgba(255,140,40,.9)'; ctx.fillRect(-.4, 2, .8, 9); } } else { ctx.fillStyle = '#3a2418'; ctx.fillRect(-1, -4, 2, 15); ctx.fillStyle = '#2a2226'; ctx.fillRect(-5, -5, 6, 6); if (!INK) { ctx.fillStyle = '#ff8a2a'; ctx.fillRect(-5, -5, 1.2, 6); } } ctx.restore(); }
+  else if (false && opt.hip) { ctx.save(); ctx.translate(8, -15); ctx.rotate(.35); ctx.fillStyle = '#4a2e18'; ctx.fillRect(-1.3, 0, 2.6, opt.hip === 2 ? 13 : 8); ctx.fillStyle = opt.hip === 2 ? '#c8a046' : '#5a3a22'; ctx.fillRect(-2.5, -1.5, 5, 1.6); ctx.fillStyle = '#5a3a22'; ctx.fillRect(-.8, -5, 1.6, 4); ctx.restore(); }
   if (opt.shoes) { ctx.fillStyle = opt.fire ? '#2a2224' : opt.ice ? '#5a9cc0' : opt.knight ? '#5a626e' : '#3a2a1e'; ctx.fillRect(-6 - stride, -2 - Math.max(0, -leg)*.6 + bob, 6, 3); ctx.fillRect(stride, -2 - Math.max(0, leg)*.6 + bob, 6, 3); }
   if (opt.naked && !opt.pantsOn && !INK) { for (let yy = 0; yy < 2; yy++) for (let xx = 0; xx < 4; xx++) { ctx.fillStyle = (xx + yy) % 2 ? '#141414' : '#444'; ctx.fillRect(-6 + xx*3, -15 + yy*3, 3, 3); } }
   const hc = opt.hairCol || '#2a1d14', hs = opt.hair || 0;
@@ -3449,14 +3482,15 @@ function drawHuman(c, S, opt) {
   ctx.fillStyle = rgb(skin); disc(0, -35.5, 7.2);                                          // cabeza redonda
   if (opt.knight) {   // yelmo cerrado
     ctx.fillStyle = opt.fire ? '#3a3034' : opt.ice ? '#a6e0f6' : '#a0a8b4'; disc(0, -36.5, 8.2); ctx.fillRect(-8.2, -37, 16.4, 8.5); ctx.fillStyle = opt.fire ? '#241c1e' : opt.ice ? '#5aa6cc' : '#7a828e'; ctx.fillRect(-8.2, -30, 16.4, 1.6);
-    if (!INK) { ctx.fillStyle = opt.fire ? 'rgba(255,' + (140 + 80*Math.sin(performance.now()/150) | 0) + ',40,1)' : opt.ice ? 'rgba(120,' + (220 + 30*Math.sin(performance.now()/220) | 0) + ',255,1)' : '#14161a'; ctx.fillRect(-6.5, -37, 13, 1.8); ctx.fillStyle = '#14161a'; ctx.fillRect(-.6, -37, 1.2, 6); for (let k = 0; k < 3; k++) { ctx.fillRect(2.5 + k*1.6, -33.5, .9, .9); ctx.fillRect(-4 - k*1.6, -33.5, .9, .9); } ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(-5.5, -43, 3, 4); ctx.fillStyle = '#c8a046'; ctx.fillRect(-.6, -45, 1.2, 6); }
-    ctx.restore(); if (opt.front) opt.front(); knightShield(opt); ctx.restore(); return;
+    if (!INK && !rear) { ctx.fillStyle = opt.fire ? 'rgba(255,' + (140 + 80*Math.sin(performance.now()/150) | 0) + ',40,1)' : opt.ice ? 'rgba(120,' + (220 + 30*Math.sin(performance.now()/220) | 0) + ',255,1)' : '#14161a'; ctx.fillRect(-6.5, -37, 13, 1.8); ctx.fillStyle = '#14161a'; ctx.fillRect(-.6, -37, 1.2, 6); for (let k = 0; k < 3; k++) { ctx.fillRect(2.5 + k*1.6, -33.5, .9, .9); ctx.fillRect(-4 - k*1.6, -33.5, .9, .9); } ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(-5.5, -43, 3, 4); ctx.fillStyle = '#c8a046'; ctx.fillRect(-.6, -45, 1.2, 6); }
+    ctx.restore(); if (!rear && opt.front) opt.front(); if (rear) backItems(); knightShield(opt); ctx.restore(); return;
   }
   ctx.fillStyle = hc;
-  if (hs === 0 || hs === 1 || hs === 2) disc(0, -36.5, 7.8, Math.PI + .1, Math.PI*2 - .1);
+  if (rear) { if (hs <= 2) { disc(0, -36, 7.9); if (hs === 1) ctx.fillRect(-7.5, -36, 15, 12); if (hs === 2) { disc(0, -31, 3); ctx.fillRect(-1.5, -31, 3, 8); } } else if (hs === 3) { ctx.fillRect(-1.8, -47, 3.6, 16); disc(0, -47, 1.8); } else disc(0, -37, 7.4, Math.PI + .45, Math.PI*2 - .45); }
+  else if (hs === 0 || hs === 1 || hs === 2) disc(0, -36.5, 7.8, Math.PI + .1, Math.PI*2 - .1);
   else if (hs === 3) { ctx.fillRect(-1.8, -47, 3.6, 8); disc(0, -47, 1.8); }
-  else if (hs === 4) disc(0, -37, 7.4, Math.PI + .45, Math.PI*2 - .45);
-  if (!INK) {
+  else if (hs === 4 && !rear) disc(0, -37, 7.4, Math.PI + .45, Math.PI*2 - .45);
+  if (!INK && !rear) {
     const ec = opt.eyes || '#1b1b1b', es = opt.eyeShape || 0;
     if (opt.lookUp) ctx.translate(0, -2.2);
     if (es === 1) { ctx.fillStyle = '#fff'; ctx.fillRect(-4.5, -36.5, 4, 4); ctx.fillRect(.5, -36.5, 4, 4); ctx.fillStyle = ec; ctx.fillRect(-3.5, -35.5, 2.2, 3); ctx.fillRect(1.5, -35.5, 2.2, 3); }
@@ -3467,7 +3501,8 @@ function drawHuman(c, S, opt) {
     if (opt.yawn) { ctx.fillStyle = '#3a1414'; ctx.beginPath(); ctx.ellipse(0, -31.2, 2.2, .6 + opt.yawn*2.6, 0, 0, 7); ctx.fill(); }
   }
   ctx.restore();
-  if (opt.front) opt.front();
+  if (!rear && opt.front) opt.front();
+  if (rear) backItems();
   if (opt.shield && opt.knight) knightShield(opt); else if (opt.shield) { ctx.fillStyle = '#8a5a30'; ctx.beginPath(); ctx.arc(-11, -20, 6.5, 0, 7); ctx.fill(); if (!INK) { ctx.fillStyle = '#b0b8c0'; ctx.beginPath(); ctx.arc(-11, -20, 2, 0, 7); ctx.fill(); ctx.strokeStyle = '#6a727c'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(-11, -20, 6, 0, 7); ctx.stroke(); } }
   if (opt.cover) { ctx.fillStyle = rgb(opt.skin); ctx.fillRect(-7, -39, 6, 4); ctx.fillRect(1, -39, 6, 4); ctx.fillRect(-9, -36, 3, 10); ctx.fillRect(6, -36, 3, 10);
     if (!INK) { ctx.fillStyle = 'rgba(230,60,70,.7)'; ctx.fillRect(-6, -33, 3, 2); ctx.fillRect(3, -33, 3, 2); ctx.fillStyle = '#9fd0ff'; ctx.fillRect(8, -44 + (performance.now()/60 % 8), 2, 3); } }
@@ -3562,7 +3597,7 @@ function drawPerson(o, x, y, you) {
     }
     if (!inHand && opt.shield) { opt.shieldBack = true; opt.shield = false; }   // el escudo también a la espalda, por fuera del arma
   }
-  opt.flip = !!o.fl;   // mira hacia donde corre
+  opt.flip = !!o.fl; opt.rear = !!o.rear;   // mira hacia donde va: izquierda/derecha y de frente/de espaldas
   opt.run = m !== 'fight' && moving;   // en modo pelea anda con el arma en la mano; si no, corre con ella guardada
   if (Q.refl && !INK && (o.a || me.a) === 'w') {
     const wx = Math.round(x), wy = Math.round(y), wet = (a, b) => inside(a, b) && (GR[idx(a, b)] === G.WATER || GR[idx(a, b)] === G.DEEP);
@@ -3585,7 +3620,7 @@ function faceFlip(n, x, y) {
   let best = null, bd = 9;
   const cand = [me]; for (const o of others.values()) cand.push(o);
   for (const t of cand) { if (t.a !== n.a || t.hp <= 0) continue; const d = Math.abs(t.fx - x) + Math.abs(t.fy - y); if (d < bd) { bd = d; best = t; } }
-  if (best) { const sx = (best.fx - x) - (best.fy - y); if (Math.abs(sx) > .15) n.fl = sx < 0; }
+  if (best) { const sx = (best.fx - x) - (best.fy - y), sy = (best.fx - x) + (best.fy - y); if (Math.abs(sx) > .15) n.fl = sx < 0; if (Math.abs(sy) > .15) n.rear = sy < 0; }
   else { const mx = n.x - x, my = n.y - y, sx = mx - my; if (Math.abs(sx) > .05) n.fl = sx < 0; }   // si no hay nadie, mira hacia donde camina
   return !!n.fl;
 }
@@ -3607,12 +3642,12 @@ function drawNpc(n, x, y, now) {
                mummy:{ skin:[214,200,160], coat:[226,214,178], pants:[206,194,156], hairCol:'#cbb98a', eyes:'#ffe14a' },
                guard:{ skin:[48,42,40], coat:[206,166,62], pants:[36,40,70], hairCol:'#111', eyes:'#ffcc00', armor:2 },
                boss:{ skin:[120,96,66], coat:[230,190,60], pants:[64,40,120], hairCol:'#111', eyes:'#ff2a2a', armor:2 } }[D.foe];
-  const flip = faceFlip(n, x, y), nrun = moving && !!n.tg && Math.abs(n.x - x) + Math.abs(n.y - y) > .35;
+  const flip = faceFlip(n, x, y), rear = !!n.rear, nrun = moving && !!n.tg && Math.abs(n.x - x) + Math.abs(n.y - y) > .35;
   const stow = o => { if (!nrun) return o; const f = o.front; o.run = true; o.handBusy = false; o.front = () => { stowW = true; try { f && f(); } finally { stowW = false; } }; if (D.w && D.w !== 'none' && D.w !== 'fist') o.back = () => drawWeapon([0,0], D.w, false); return o; };
-  if (DS) drawHuman(base, S, stow(Object.assign({ flip, moving, handBusy:true, hair:0, front:() => { drawWeapon([0,0], D.w, true, nAng, DS.skin); if (D.boss) { ctx.fillStyle = '#f2c94c'; ctx.fillRect(-8, -50, 16, 5); ctx.fillRect(-8, -55, 3, 5); ctx.fillRect(-1.5, -56, 3, 6); ctx.fillRect(5, -55, 3, 5); } if (D.foe === 'mummy' && !INK) { ctx.fillStyle = 'rgba(120,100,60,.5)'; for (let k = 0; k < 4; k++) ctx.fillRect(-8, -28 + k*5, 16, 1.2); } } }, DS)));
+  if (DS) drawHuman(base, S, stow(Object.assign({ flip, rear, moving, handBusy:true, hair:0, front:() => { drawWeapon([0,0], D.w, true, nAng, DS.skin); if (D.boss) { ctx.fillStyle = '#f2c94c'; ctx.fillRect(-8, -50, 16, 5); ctx.fillRect(-8, -55, 3, 5); ctx.fillRect(-1.5, -56, 3, 6); ctx.fillRect(5, -55, 3, 5); } if (D.foe === 'mummy' && !INK) { ctx.fillStyle = 'rgba(120,100,60,.5)'; for (let k = 0; k < 4; k++) ctx.fillRect(-8, -28 + k*5, 16, 1.2); } } }, DS)));
   else drawHuman(base, S, stow(orc
-    ? { flip, moving, handBusy:true, skin:[108,150,78], coat:[132,112,92], pants:[90,74,60], hair:0, hairCol:'#2a2a2a', tusks:true, eyes:'#c22', front:() => drawWeapon([0,0], D.w, true, nAng, [108,150,78]) }
-    : { flip, moving, handBusy:true, skin:[204,150,116], coat:[210,172,108], pants:[130,100,66], hair:0, hairCol:'#ece0bc', eyes:'#1b1b1b',
+    ? { flip, rear, moving, handBusy:true, skin:[108,150,78], coat:[132,112,92], pants:[90,74,60], hair:0, hairCol:'#2a2a2a', tusks:true, eyes:'#c22', front:() => drawWeapon([0,0], D.w, true, nAng, [108,150,78]) }
+    : { flip, rear, moving, handBusy:true, skin:[204,150,116], coat:[210,172,108], pants:[130,100,66], hair:0, hairCol:'#ece0bc', eyes:'#1b1b1b',
         front:() => { ctx.fillStyle = '#be362c'; ctx.fillRect(-7, -30, 14, 3); drawWeapon([0,0], D.w, true, nAng, [204,150,116]); } }));
   if (!INK) overlays.push(() => {
     const top = 44*S;
@@ -3958,6 +3993,7 @@ function crispPeople(T) {
 }
 // ---------- apuntar tocando el dibujo (árbol, roca, enemigo…) y botón de atacar ----------
 let lockTarget = null;
+const lockOk = () => lockTarget && lockTarget.dead < 0 && lockTarget.a === me.a && me.mode === 'fight' && Math.abs(lockTarget.x - me.x) + Math.abs(lockTarget.y - me.y) <= 12;
 function spriteHit(px, py) {   // px, py en coordenadas lógicas del lienzo
   const T = curTurn(), cands = [];
   const add = (x, y, h, w, kind, ref) => { const c = iso(x + .5, y + .5); if (px >= c[0] - w && px <= c[0] + w && py >= c[1] - h && py <= c[1] + 6) cands.push({ x, y, kind, ref, d:Math.hypot(px - c[0], py - (c[1] - h/2)) }); };
@@ -4217,7 +4253,7 @@ function drawSage(n, base, now, moving) {
   const flip = faceFlip(n, n.fx, n.fy);
   const t = now/1000;
   // tarotista: turbante con joya, túnica morada con estrellas doradas, fular, aros y cartas del destino que flotan en sus manos
-  drawHuman(base, PS, { flip, moving, run: moving && !!n.duel, handBusy:true, skin:[176,124,92], coat:[92,40,120], shirt:'#6a2a8a', pants:[70,30,96], pantsOn:true, shoes:true, hair:0, hairCol:'#d8d8d8', eyes: chg ? '#ff3a2a' : '#8ae0ff',
+  drawHuman(base, PS, { flip, rear:!!n.rear, moving, run: moving && !!n.duel, handBusy:true, skin:[176,124,92], coat:[92,40,120], shirt:'#6a2a8a', pants:[70,30,96], pantsOn:true, shoes:true, hair:0, hairCol:'#d8d8d8', eyes: chg ? '#ff3a2a' : '#8ae0ff',
     front:() => {
       // falda larga de la túnica con estrellas
       ctx.fillStyle = '#5a2478'; ctx.beginPath(); ctx.moveTo(-8, -14); ctx.lineTo(8, -14); ctx.lineTo(11, 0); ctx.lineTo(-11, 0); ctx.closePath(); ctx.fill();
@@ -4331,6 +4367,7 @@ function drawItemIcon(k) {
       P([[24,4],[35,18],[30,40],[18,40],[13,18]], '#5cc8e8'); P([[24,4],[35,18],[24,22]], '#a8ecff'); P([[24,4],[24,22],[13,18]], '#7ad8f2');
       P([[13,18],[24,22],[18,40]], '#3aa6cc'); P([[24,22],[35,18],[30,40]], '#2e8cb4'); P([[24,22],[30,40],[18,40]], '#46b4d8');
       g.fillStyle = 'rgba(255,255,255,.9)'; g.fillRect(19, 10, 2, 6); g.fillRect(28, 20, 2, 2); break; }
+    case 'piedra': E(24, 41, 14, 3.5, 0, 'rgba(0,0,0,.3)'); P([[9, 38], [11, 24], [20, 14], [33, 13], [40, 24], [39, 38]], '#7e868c'); P([[20, 14], [33, 13], [40, 24], [27, 26]], '#a4acb2'); P([[9, 38], [11, 24], [27, 26], [24, 38]], '#646c72'); g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(24, 17, 6, 2); break;
     case 'hielo': E(24, 42, 12, 3, 0, 'rgba(60,120,150,.35)'); P([[12, 40], [10, 22], [17, 12], [21, 24], [24, 6], [30, 22], [34, 14], [38, 28], [36, 40]], '#6cc8ec'); P([[24, 6], [30, 22], [26, 40], [21, 24]], '#b4ecff'); P([[34, 14], [38, 28], [36, 40], [31, 30]], '#8fdcf6'); g.fillStyle = '#fff'; g.fillRect(23, 12, 2, 8); break;
     case 'fibra': for (let i = 0; i < 7; i++) { g.strokeStyle = i % 2 ? '#7a9a4a' : '#5a8a3a'; g.lineWidth = 2; g.beginPath(); g.moveTo(14 + i*3, 40); g.quadraticCurveTo(18 + i*2, 22, 12 + i*4, 8); g.stroke(); } Rr(14, 28, 22, 4, '#c8a060'); break;
     default: C(24, 24, 12, '#c8b080');
@@ -4433,18 +4470,22 @@ function glide(o, tx, ty, step) {
   let dx = tx - o.fx, dy = ty - o.fy;
   if (Math.abs(dx) + Math.abs(dy) > (o.pullT && performance.now() - o.pullT < 1500 ? 14 : 6)) { o.fx = tx; o.fy = ty; return 0; }   // saltos grandes (puertas, cristal…): sin animación
   if (Math.abs(dx) < 1e-3 && Math.abs(dy) < 1e-3) { o.fx = tx; o.fy = ty; return step; }
-  const sx = dx - dy; if (Math.abs(sx) > .02) o.fl = sx < 0;   // mira hacia donde corre
+  const sx = dx - dy; if (Math.abs(sx) > .02 && !o.lockFace) o.fl = sx < 0;   // mira hacia donde corre
   const firstX = Math.abs(dx) >= Math.abs(dy) && Math.abs(dx) > 1e-3 && !(Math.abs(dy) > 1e-3 && Math.abs(dy) < .999 && Math.abs(dy) < Math.abs(dx) && Math.abs(dy - Math.round(dy)) > 1e-3);
   // termina antes el eje que está a medias (para no cortar esquinas)
   const fracY = Math.abs(o.fy - Math.round(o.fy)) > 1e-3, fracX = Math.abs(o.fx - Math.round(o.fx)) > 1e-3;
   const useX = fracX ? true : fracY ? false : Math.abs(dx) >= Math.abs(dy);
+  if (!o.lockFace && (Math.abs(dx) > 1e-3 || Math.abs(dy) > 1e-3)) o.rear = (useX && Math.abs(dx) > 1e-3) ? dx < 0 : dy < 0;   // hacia arriba en pantalla: de espaldas
   if (useX && Math.abs(dx) > 1e-3) { const m = Math.min(Math.abs(dx), step); o.fx += Math.sign(dx)*m; return step - m > 1e-4 ? glide(o, tx, ty, step - m) : 0; }
   const m = Math.min(Math.abs(dy), step); o.fy += Math.sign(dy)*m; return step - m > 1e-4 && Math.abs(tx - o.fx) > 1e-3 ? glide(o, tx, ty, step - m) : step - m;
 }
 // el bucle nunca se detiene: si un dibujo falla, se avisa y el juego sigue (antes un fallo congelaba al personaje)
-let frameErrT = 0;
+let frameErrT = 0, FPS_CAP = store.get('fpscap') === '30' ? 30 : 60, lastDrawT = 0;
 function frame(now) {
   if (!Number.isFinite(now)) now = performance.now();
+  // tope de fotogramas: 60 (o 30 si lo eliges en Ajustes), también en pantallas de 120/144 Hz
+  if (lastDrawT && now - lastDrawT < 1000/FPS_CAP - 2) { requestAnimationFrame(frame); return; }
+  lastDrawT = now;
   try { frameInner(now); }
   catch (e) { console.error(e); if (performance.now() - frameErrT > 20000) { frameErrT = performance.now(); try { toast('⚠️ Error de dibujo (el juego sigue): ' + String(e && e.message || e).slice(0, 80)); } catch (e2) {} } }
   requestAnimationFrame(frame);
@@ -4452,6 +4493,8 @@ function frame(now) {
 function frameInner(now) {
   perfTick(now);
   const dt = clamp((now - lastT)/1000, 0, .1); lastT = now;
+  if (lockOk()) { me.lockFace = true; const sx = (lockTarget.fx - me.fx) - (lockTarget.fy - me.fy), sy = (lockTarget.fx - me.fx) + (lockTarget.fy - me.fy); if (Math.abs(sx) > .1) me.fl = sx < 0; if (Math.abs(sy) > .1) me.rear = sy < 0; }
+  else { me.lockFace = false; if (lockTarget && (lockTarget.dead >= 0 || me.mode !== 'fight')) lockTarget = null; }
   // el personaje corre de casilla en casilla (sin teletransportarse): velocidad constante y por los ejes, como en la cuadrícula
   if (!me.wp) me.wp = [];
   if (me.wp.length && (Math.abs(me.wp[0][0] - me.fx) + Math.abs(me.wp[0][1] - me.fy) > 2.6 || me.wp.length > 4)) me.wp.splice(0, me.wp.length - (me.wp.length > 4 ? 3 : 0));
@@ -4643,7 +4686,16 @@ function frameInner(now) {
   { const vg = ctx.createRadialGradient(cv.width/2, cv.height/2, cv.height*.35, cv.width/2, cv.height/2, cv.height*.85); vg.addColorStop(0, 'rgba(10,14,22,0)'); vg.addColorStop(1, 'rgba(10,14,22,.38)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, cv.width, cv.height); }
   ctx.setTransform(cv.width / CW, 0, 0, cv.height / CH, 0, 0);
   crispPeople(T);
-  if (lockTarget && lockTarget.dead < 0 && lockTarget.a === me.a && me.mode === 'fight') { const c = iso(lockTarget.fx + .5, lockTarget.fy + .5); ctx.strokeStyle = 'rgba(255,90,60,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(c[0], c[1], 15 + Math.sin(now/150)*2, 7, 0, 0, 7); ctx.stroke(); }
+  if (lockOk()) {   // objetivo fijado: anillo, esquinas que giran y flecha sobre la cabeza
+    const c = iso(lockTarget.fx + .5, lockTarget.fy + .5), pu = Math.sin(now/150), rot = now/700;
+    ctx.save(); ctx.translate(c[0], c[1]); ctx.scale(1, .5);
+    ctx.strokeStyle = 'rgba(255,70,50,.9)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, 17 + pu*2, 0, 7); ctx.stroke();
+    ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(255,210,90,.95)';
+    for (let k = 0; k < 4; k++) { const a = rot + k*Math.PI/2; ctx.beginPath(); ctx.arc(0, 0, 24 + pu*2, a - .32, a + .32); ctx.stroke(); }
+    ctx.restore();
+    const hy = c[1] - 62 + Math.sin(now/200)*3;
+    ctx.fillStyle = '#ff4a3a'; ctx.strokeStyle = '#1a0a08'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(c[0] - 6, hy - 8); ctx.lineTo(c[0] + 6, hy - 8); ctx.lineTo(c[0], hy); ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
   for (const f of overlays) f();
   drawSparks(now, dt);
   drawCoinFx(now, dt); drawItemPops(now); drawWhirls(now); drawIsleBugs(now);
@@ -4985,6 +5037,9 @@ function renderSettings() {
     b.addEventListener('click', () => { qAuto = k === 'auto'; store.set('qmode2', k); if (!qAuto) setQuality(+k); else { setQuality(bigScreen() ? 4 : 3); perf.t0 = 0; } renderSettings(); });
     qc.append(b);
   }
+  const fc = el('fpsChips'); fc.innerHTML = '';
+  for (const k of [60, 30]) { const b = document.createElement('button'); b.textContent = k + ' fps'; b.classList.toggle('on', FPS_CAP === k); b.addEventListener('click', () => { FPS_CAP = k; store.set('fpscap', String(k)); renderSettings(); }); fc.append(b); }
+  el('fpsInfo').textContent = (FPS_CAP === 60 ? '60 fps: lo más fluido. ' : '30 fps: gasta menos batería y va mejor en equipos lentos. ') + (perf.fps ? 'Ahora mismo: ' + Math.round(perf.fps) + ' fps' : '') + (perf.fps && perf.fps < FPS_CAP - 8 ? ' · baja la calidad gráfica para llegar a ' + FPS_CAP : '');
   el('qInfo').textContent = 'Ahora: ' + Q.n + (qAuto ? ' · se baja sola si el juego va lento' : ' · fijada. Si el juego te va lento, bájala aquí');
   el('musVol').value = Math.round(VOL.mus*100); el('sfxVol').value = Math.round(VOL.sfx*100);
   const hc = el('hintChips'); hc.innerHTML = ''; const hv = store.get('hint') !== '0';
@@ -5032,12 +5087,17 @@ function updateBlood(dt) {
   }
 }
 function drawStains(now) {
+  // la sangre se seca y desaparece con el tiempo: las gotas en ~40 s y los charcos grandes en ~75 s, encogiéndose y aclarándose
+  for (let i = stains.length - 1; i >= 0; i--) { const s2 = stains[i], life = s2.r > .15 ? 75 : 40; if ((now - s2.t0)/1000 > life) stains.splice(i, 1); }
   for (const s2 of stains) {
     if (s2.a !== me.a) continue;
-    const age = (now - s2.t0)/1000; if (age > 90) continue;
-    const p = iso(s2.x, s2.y), k = Math.min(1, age*4) * (age > 60 ? 1 - (age - 60)/30 : 1);
+    const age = (now - s2.t0)/1000, life = s2.r > .15 ? 75 : 40, f0 = life*.35;
+    const dry = age > f0 ? (age - f0)/(life - f0) : 0, p = iso(s2.x, s2.y), k = Math.min(1, age*4) * (1 - dry);
+    if (k <= .02) continue;
+    const r0 = s2.r; s2.r = r0*(1 - dry*.45);
     ctx.globalAlpha = .85*k; ctx.fillStyle = s2.vom ? '#6e8a2a' : '#6e0810'; ctx.beginPath(); ctx.ellipse(p[0], p[1], s2.r*TW*.5, s2.r*TH*.5, 0, 0, 7); ctx.fill();
-    ctx.fillStyle = s2.vom ? '#b8c44a' : '#a80e18'; ctx.beginPath(); ctx.ellipse(p[0] - 1, p[1] - .5, s2.r*TW*.32, s2.r*TH*.3, 0, 0, 7); ctx.fill();
+    if (dry < .6) { ctx.fillStyle = s2.vom ? '#b8c44a' : '#a80e18'; ctx.beginPath(); ctx.ellipse(p[0] - 1, p[1] - .5, s2.r*TW*.32, s2.r*TH*.3, 0, 0, 7); ctx.fill(); }
+    s2.r = r0;
   }
   ctx.globalAlpha = 1;
 }
