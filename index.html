@@ -302,6 +302,11 @@
   /* pantalla completa en vertical: la misma disposición de siempre, solo sin las barras del navegador */
   body.fsv{min-height:100dvh}
   .modes{position:relative;width:min(96vw,560px);justify-content:center}
+  @media (orientation:landscape){   /* pantalla completa girada: el botón de desenvainar, pequeño a la izquierda (no tapa la pantalla) */
+    body.fs .modes{width:auto;max-width:var(--bar);align-items:flex-start}
+    body.fs #sheathBtn{width:auto;flex:0 0 auto;padding:6px 12px;font-size:12px}
+    body.fs.fighting .belt{bottom:auto;top:92px}
+  }
   #peopleBtn{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;padding:0 !important;font-size:21px !important;line-height:1;
     border:2px solid var(--ink);background:radial-gradient(circle at 35% 30%,#f6e8c4,#d9bf86) !important;box-shadow:1px 3px 0 var(--ink) !important;cursor:pointer}
   #peopleBtn b{position:absolute;right:-5px;top:-5px;min-width:19px;height:19px;border-radius:10px;background:#c0392b;color:#fff;font:700 11px/19px Georgia,serif;border:2px solid var(--ink);padding:0 3px}
@@ -3726,7 +3731,7 @@ function postShaders(now, T) {
 // --- contorno de tinta (estilo Pixel Probe): cada objeto se pinta dos veces, primero en tinta y engordado ---
 const PROTO = CanvasRenderingContext2D.prototype, DESC = k => Object.getOwnPropertyDescriptor(PROTO, k);
 const D_FS = DESC('fillStyle'), D_SS = DESC('strokeStyle'), D_LW = DESC('lineWidth');
-let INK = false, INK_DEV = 1.35; const INKC = '#15110e';
+let INK = false, INK_DEV = 1.35, INK_E = 1, INK_MUL = 1; /* INK_MUL: grosor extra del contorno de las personas */ const INKC = '#15110e';
 const INK_KEYS = ['fillStyle','strokeStyle','lineWidth','fillRect','fill','stroke','fillText','strokeText','strokeRect'];
 function inkBegin() {
   INK = true; let lw = 1; const c = ctx;
@@ -3734,10 +3739,10 @@ function inkBegin() {
   Object.defineProperty(c, 'fillStyle', { configurable:true, get:() => INKC, set:() => {} });
   Object.defineProperty(c, 'strokeStyle', { configurable:true, get:() => INKC, set:() => {} });
   Object.defineProperty(c, 'lineWidth', { configurable:true, get:() => lw, set:v => { lw = v; } });
-  const m = c.getTransform(), e = INK_DEV / Math.max(.05, Math.hypot(m.a, m.b));
-  c.fillRect = (x, y, w, h) => PROTO.fillRect.call(c, x - e, y - e, w + 2*e, h + 2*e);
-  c.fill = function () { D_LW.set.call(c, e*2); c.lineJoin = 'round'; PROTO.stroke.call(c); PROTO.fill.call(c); };
-  c.stroke = function () { D_LW.set.call(c, lw + e*2); c.lineCap = 'round'; PROTO.stroke.call(c); };
+  const m = c.getTransform(), e = INK_DEV / Math.max(.05, Math.hypot(m.a, m.b)); INK_E = e;
+  c.fillRect = (x, y, w, h) => { const k = e*INK_MUL; PROTO.fillRect.call(c, x - k, y - k, w + 2*k, h + 2*k); };
+  c.fill = function () { D_LW.set.call(c, e*2*INK_MUL); c.lineJoin = 'round'; PROTO.stroke.call(c); PROTO.fill.call(c); };
+  c.stroke = function () { D_LW.set.call(c, lw + e*2*INK_MUL); c.lineCap = 'round'; PROTO.stroke.call(c); };
   c.fillText = () => {}; c.strokeText = () => {}; c.strokeRect = () => {};
 }
 function inkEnd() { for (const k of INK_KEYS) delete ctx[k]; D_LW.set.call(ctx, 1); INK = false; }
@@ -4709,14 +4714,17 @@ function jointRect(orig0, c, x, y, w, h, px, py, a1, jy, a2, cap, hand, dark) {
 }
 function limbHook(c, J) {
   if (!J) return () => {};
-  const orig = CanvasRenderingContext2D.prototype.fillRect;
+  const prev = Object.prototype.hasOwnProperty.call(c, 'fillRect') ? c.fillRect : null;
+  const orig = INK ? function (x, y, w, h) {   // en la pasada de tinta: brazos y piernas con su contorno, redondeado y algo más grueso que el resto
+    const k = INK_E*INK_MUL; this.beginPath(); rrPath(this, x - k, y - k, w + 2*k, h + 2*k, Math.min(Math.abs(w)/2 + k, 2.2)); CanvasRenderingContext2D.prototype.fill.call(this);
+  } : CanvasRenderingContext2D.prototype.fillRect;
   c.fillRect = function (x, y, w, h) {
     const cx = x + w/2;
     if (w <= 7 && y >= -12.6 && y < 5) { const L = cx < 0; return jointRect(orig, this, x, y, w, h, L ? -3 : 3, HIP_Y, L ? J.hL : J.hR, KNEE_Y, L ? J.kL : J.kR, w >= 3.5 && h > 6, false, L ? J.far : 0); }
     if (w <= 3.4 && y >= -28.5 && y <= -9 && (cx < -7.4 || cx > 7.4)) { const L = cx < 0, main = w >= 2.8 && h > 9; return jointRect(orig, this, x, y, w, h, L ? -9 : 9, SHO_Y, L ? J.aL : J.aR, ELB_Y, L ? J.eL : J.eR, main, main && !INK, L ? J.far : 0); }
-    orig.call(this, x, y, w, h);
+    (prev || orig).call(this, x, y, w, h);
   };
-  return () => { delete c.fillRect; };
+  return () => { if (prev) c.fillRect = prev; else delete c.fillRect; };
 }
 function drawHuman(c, S, opt) {
   const view = opt.view || HVIEW; HVIEW = null;
@@ -4731,7 +4739,7 @@ function drawHuman(c, S, opt) {
   // correr: zancadas largas, brazos que balancean y el cuerpo inclinado hacia delante; andar: paso corto
   // de frente/espaldas las piernas suben y bajan; de perfil giran desde la cadera (pie derecho delante, pie derecho detrás…)
   const run = opt.moving && opt.run, ph = opt.moving ? performance.now()/(run ? 62 : 95) : 0, sn = Math.sin(ph);
-  const leg = opt.moving ? sn*(run ? 9 : 3.5)*(1 - .85*sideK) : 0, bob = (opt.moving ? (run ? Math.abs(sn)*3.2 : (sideK ? (1 - Math.abs(sn))*1.4 : Math.abs(sn)*1.2)) : 0) - (opt.guard ? 1.6 : 0), arm = opt.moving ? sn*(run ? 3.2 : 1.4)*(1 - sideK) : 0, stride = run ? sn*2.8*(1 - sideK) : 0;
+  const leg = opt.moving ? sn*(run ? 9 : 3.5)*(1 - .85*sideK) : 0, bob = (opt.moving ? (run ? Math.abs(sn)*3.2 : (sideK ? (1 - Math.abs(sn))*1.4 : Math.abs(sn)*1.2)) : 0) - (opt.guard ? 1.6 : 0), arm = opt.moving ? sn*(run ? 3.2 : 1.4)*(1 - sideK) : 0, stride = run ? sn*1.1*(1 - sideK) : 0;
   // paso humano: la pierna adelanta con la rodilla doblada (fase de vuelo) y se estira al apoyar; al correr el talón sube mucho más
   let J = null;
   if (sideK || opt.guard || opt.roll !== undefined) {
@@ -4778,10 +4786,10 @@ function drawHuman(c, S, opt) {
   const LEGC = [null, [112,74,42], [150,158,170], [56,46,48], [150,206,232]][opt.legsA || 0];
   const unhook = limbHook(ctx, J);
   ctx.fillStyle = rgb(LEGC || opt.pants || skinD);
-  ctx.fillRect(-5 - stride, -12 + Math.max(0, -leg)*.6, 4, 12 + bob - Math.max(0, -leg)*.6); ctx.fillRect(1 + stride, -12 + Math.max(0, leg)*.6, 4, 12 + bob - Math.max(0, leg)*.6);
+  ctx.fillRect(-5 - stride, -12, 4, 12 + bob - Math.max(0, -leg)*.6); ctx.fillRect(1 + stride, -12, 4, 12 + bob - Math.max(0, leg)*.6);   // la pierna sale siempre de la cadera; al levantar el pie se acorta por abajo (antes quedaba una pierna «fantasma» apoyada)
   if (opt.legsA) {   // pantalones de armadura: rodilleras y franja
     const KC = opt.legsA === 1 ? '#5e3c1e' : opt.legsA === 3 ? '#241c1e' : opt.legsA === 4 ? '#5aa6cc' : '#7a828e';
-    ctx.fillStyle = KC; ctx.fillRect(-5.4 - stride, -7.5 + Math.max(0, -leg)*.3, 4.8, 2.6); ctx.fillRect(.6 + stride, -7.5 + Math.max(0, leg)*.3, 4.8, 2.6);
+    ctx.fillStyle = KC; ctx.fillRect(-5.4 - stride, -7.5 - Math.max(0, -leg)*.3, 4.8, 2.6); ctx.fillRect(.6 + stride, -7.5 - Math.max(0, leg)*.3, 4.8, 2.6);
     if (!INK && opt.legsA === 3) { ctx.fillStyle = 'rgba(255,' + (120 + 80*Math.sin(performance.now()/200) | 0) + ',30,.9)'; ctx.fillRect(-3.6 - stride, -11, .9, 3); ctx.fillRect(2.6 + stride, -11, .9, 3); }
     if (!INK && opt.legsA >= 2) { ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(-4.6 - stride, -11.5, 1, 4); ctx.fillRect(1.4 + stride, -11.5, 1, 4); }
   }
@@ -4813,8 +4821,8 @@ function drawHuman(c, S, opt) {
   if (!INK && DET) {
     const SH = 'rgba(0,0,0,.2)', HL = 'rgba(255,255,255,.14)';
     // piernas: sombra en un lado, raya y dobladillo
-    ctx.fillStyle = SH; ctx.fillRect(-2.2 - stride, -12 + Math.max(0, -leg)*.6, 1.2, 10); ctx.fillRect(3.8 + stride, -12 + Math.max(0, leg)*.6, 1.2, 10);
-    ctx.fillStyle = HL; ctx.fillRect(-5 - stride, -12 + Math.max(0, -leg)*.6, .9, 9); ctx.fillRect(1 + stride, -12 + Math.max(0, leg)*.6, .9, 9);
+    ctx.fillStyle = SH; ctx.fillRect(-2.2 - stride, -12, 1.2, 10 - Math.max(0, -leg)*.6); ctx.fillRect(3.8 + stride, -12, 1.2, 10 - Math.max(0, leg)*.6);
+    ctx.fillStyle = HL; ctx.fillRect(-5 - stride, -12, .9, 9 - Math.max(0, -leg)*.6); ctx.fillRect(1 + stride, -12, .9, 9 - Math.max(0, leg)*.6);
     if (opt.pantsOn || opt.pants) { ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.fillRect(-5 - stride, -3.4 - Math.max(0, -leg)*.6 + bob, 4, .8); ctx.fillRect(1 + stride, -3.4 - Math.max(0, leg)*.6 + bob, 4, .8); ctx.fillRect(-1.2, -12, 2.4, 1); }
     // tronco: volumen, dobladillo y pliegues
     ctx.fillStyle = SH; ctx.fillRect(4.6, -28, 3.4, 17); ctx.fillStyle = HL; ctx.fillRect(-8, -28, 1.6, 16);
@@ -7125,7 +7133,14 @@ function placeChests(T) {
   }
   for (const i of steep) HT[i] = 0;
 })();
-drawHuman = safeDraw(drawHuman, 'humano'); drawNpc = safeDraw(drawNpc, 'npc'); drawBall = safeDraw(drawBall, 'bola'); drawAttack = safeDraw(drawAttack, 'ataque');
+drawHuman = safeDraw(drawHuman, 'humano'); drawHuman = (f => function (...a) { const m0 = INK_MUL; if (INK) INK_MUL = 1.15; try { return f.apply(this, a); } finally { INK_MUL = m0; } })(drawHuman);   // cuerpo, brazos y piernas: el mismo contorno drawNpc = safeDraw(drawNpc, 'npc'); drawBall = safeDraw(drawBall, 'bola'); drawAttack = safeDraw(drawAttack, 'ataque');
+// guardado continuo: en tiempo real ya no hay turnos que guarden solos, así que se guarda cada pocos segundos y al salir de la app
+setInterval(() => { if (started && me.hp > 0) { try { save(); } catch (e) {} } }, 4000);
+const saveNow = () => { if (started) { try { save(); } catch (e) {} } };
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveNow(); });
+window.addEventListener('pagehide', saveNow); window.addEventListener('beforeunload', saveNow);
+// la partida guardada se carga aquí, cuando ya existe todo lo que necesita (antes fallaba en silencio y empezabas de cero)
+try { loadProfile(JSON.parse(store.get('profile') || 'null')); } catch (e) { console.error('No se pudo cargar la partida', e); }
 rebuildVrocks(curTurn());
 updateStats(); reveal(); renderDisc(); renderList(); renderQuick(); renderInv(); renderBelt(); requestAnimationFrame(frame);
 const setConn = (on, txt) => { el('dot').className = 'dot' + (on ? ' on' : ''); el('conn').textContent = txt; };
